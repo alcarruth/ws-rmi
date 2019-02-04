@@ -4,8 +4,10 @@
   "description": "Remote method invocation over websockets.",
   "main": "build/index.js",
   "scripts": {
-    "coffee": "coffee -cMo ./lib ./src/*.coffee",
-    "babel": "babel ./lib -d ./lib5",
+    "build": "npm run coffee && npm run babel",
+    "coffee": "coffee -cMo ./lib6 ./src/*.coffee",
+    "lint": "eslint ./lib5",
+    "babel": "babel ./lib6 -d ./lib5",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -31,6 +33,9 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "coffeescript": "^2.3.2"
+    "coffeescript": "^2.3.2",
+    "eslint": "^5.13.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
   }
 }
