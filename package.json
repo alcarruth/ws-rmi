@@ -4,6 +4,8 @@
   "description": "Remote method invocation over websockets.",
   "main": "build/index.js",
   "scripts": {
+    "coffee": "coffee -cMo ./lib ./src/*.coffee",
+    "babel": "babel ./lib -d ./lib5",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,5 +27,10 @@
   "bugs": {
     "url": "https://github.com/alcarruth/ws_rmi/issues"
   },
-  "homepage": "https://github.com/alcarruth/ws_rmi#readme"
+  "homepage": "https://github.com/alcarruth/ws_rmi#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "coffeescript": "^2.3.2"
+  }
 }
