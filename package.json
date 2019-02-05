@@ -4,11 +4,14 @@
   "description": "Remote method invocation over websockets.",
   "main": "build/index.js",
   "scripts": {
-    "build": "npm run coffee && npm run babel",
-    "coffee": "coffee -cMo ./lib6 ./src/*.coffee",
-    "lint": "eslint ./lib5",
-    "babel": "babel ./lib6 -d ./lib5",
-    "clean": "rm -rf ./lib5/ ./lib6/ && mkdir -p ./lib5/ ./lib6/",
+    "build": "npm run coffee && npm run js6 && npm run js5",
+    "coffee": "cp ./src/*.coffee ./lib/coffee",
+    "js6": "coffee -cMo ./lib/js6 ./src/*.coffee",
+    "js5": "npm run js6 && babel ./lib/js6 -d ./lib/js5",
+    "lint": "eslint ./lib/js5",
+    "clean": "npm run rmdirs && npm run mkdirs",
+    "rmdirs": "rm -rf ./lib/js5/ ./lib/js6/ ./lib/coffee/",
+    "mkdirs": "mkdir -p ./lib/js5/ ./lib/js6/ ./lib/coffee",
     "test": "mocha --require babel-core/register"
   },
   "repository": {
@@ -42,6 +45,8 @@
   },
   "dependencies": {
     "coffeescript": "^2.3.2",
+    "http": "0.0.0",
+    "https": "^1.0.0",
     "ws": "^6.1.3"
   }
 }

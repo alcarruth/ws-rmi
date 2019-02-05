@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#1/usr/bin/env coffee
 
-// file: index.js
-// package: ws_rmi
+# package: ws_rmi
+# file: index.coffee
 
-var c = require('./lib/js6/ws_rmi_client.js')
-var s = require('./lib/js6/ws_rmi_server.js')
+c = require('./lib/coffee/ws_rmi_client.coffee')
+s = require('./lib/coffee/ws_rmi_server.coffee')
 
 exports.WS_RMI_Client = c.WS_RMI_Client
 exports.WS_RMI_Stub = c.WS_RMI_Stub

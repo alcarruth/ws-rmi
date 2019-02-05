@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-// file: index.js
+// file: index_js5.js
 // package: ws_rmi
 
-var c = require('./lib/js6/ws_rmi_client.js')
-var s = require('./lib/js6/ws_rmi_server.js')
+var c = require('lib/js5/ws_rmi_client.js')
+var s = require('lib/js5/ws_rmi_server.js')
 
 exports.WS_RMI_Client = c.WS_RMI_Client
 exports.WS_RMI_Stub = c.WS_RMI_Stub
