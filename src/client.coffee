@@ -32,12 +32,10 @@ class WS_RMI_Client
     @handle_response(evt.data)
 
   onClose: (evt) =>
-    log("socket closed by server at #{@url}")
 
   onError: (evt) =>
 
   disconnect: =>
-    log("disconnecting from server at #{@url}")
     @server.close()
 
   register: (stub) =>
@@ -46,7 +44,7 @@ class WS_RMI_Client
 
   send_request: (obj_id, name, args, cb) =>
     cb_id = @cnt++
-    @cb_hash[cb_id] = cb? && cb || console.log
+    @cb_hash[cb_id] = cb
     rmi_args = { obj_id: obj_id, name: name, args: args, cb_id: cb_id }
     @server.send( JSON.stringify(rmi_args))
 
@@ -87,3 +85,50 @@ if window?
 else
   exports.WS_RMI_Client = WS_RMI_Client
   exports.WS_RMI_Stub = WS_RMI_Stub
+#
+# example_object.coffee
+
+
+WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client.coffee').WS_RMI_Stub
+
+class Stack
+
+  # note that the object must have an id in order to
+  # register and operate with the rmi server
+  #
+  constructor: (@id) ->
+    @stack = []
+
+  push: (x, cb) =>
+    @stack.push(x)
+    console.log @stack
+    cb(true)
+
+  pop: (cb) =>
+    cb( @stack.pop())
+    console.log @stack
+
+
+class Stack_Stub extends WS_RMI_Stub
+
+  @add_stub('push')
+  @add_stub('pop')
+
+
+exports.Stack = Stack
+exports.Stack_Stub = Stack_Stub
+
+
+WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client.coffee').WS_RMI_Client
+Stack_Stub = Stack_Stub || require('./example_object.coffee').Stack_Stub
+
+stack_stub = new Stack_Stub('br549')
+client = new WS_RMI_Client('ws://localhost:8085')
+client.register(stack_stub)
+
+log = (res) ->
+  console.log "result: #{res}"
+
+exports.stack = stack_stub
+exports.client = client
+exports.log = log
