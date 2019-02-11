@@ -1,12 +1,12 @@
 #!/bin/env/ coffee
 #
-# ws_rmi_server.coffee
+# ws_rmi_server
 #
 
 # WS_RMI_Server_Common contains code common to both
 # WS_RMI_Server and WSS_RMI_Server defined below
 #
-WS_RMI_Server_Common = require('./ws_rmi_server_common.coffee').WS_RMI_Server_Common
+WS_RMI_Server_Common = require('./ws_rmi_server_common').WS_RMI_Server_Common
 
 https = require('https')
 

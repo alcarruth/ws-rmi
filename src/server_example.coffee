@@ -1,10 +1,10 @@
 #!/bin/env coffee
 #
-# server_example.coffee
+# server_example
 #
 
-WS_RMI_Server = require('./ws_rmi_server.coffee').WS_RMI_Server
-Stack = require('./example_object.coffee').Stack
+WS_RMI_Server = require('./ws_rmi_server').WS_RMI_Server
+Stack = require('./example_object').Stack
 
 server = new WS_RMI_Server('localhost', 8085, '.')
 stack = new Stack('br549')

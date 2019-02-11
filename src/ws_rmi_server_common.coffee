@@ -1,6 +1,6 @@
 #!/bin/env/ coffee
 #
-# ws_rmi_server_common.coffee
+# ws_rmi_server_common
 #
 
 WebSocket = require('ws')

@@ -1,8 +1,8 @@
 #
-# example_object.coffee
+# example_object
 
 
-WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client.coffee').WS_RMI_Stub
+WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client').WS_RMI_Stub
 
 class Stack
 

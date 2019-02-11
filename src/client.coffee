@@ -1,6 +1,6 @@
 #!/bin/env/ coffee
 #
-# ws_rmi_client.coffee
+# ws_rmi_client
 #
 
 WebSocket = window?.WebSocket || require('ws')
@@ -86,10 +86,10 @@ else
   exports.WS_RMI_Client = WS_RMI_Client
   exports.WS_RMI_Stub = WS_RMI_Stub
 #
-# example_object.coffee
+# example_object
 
 
-WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client.coffee').WS_RMI_Stub
+WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client').WS_RMI_Stub
 
 class Stack
 
@@ -119,8 +119,8 @@ exports.Stack = Stack
 exports.Stack_Stub = Stack_Stub
 
 
-WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client.coffee').WS_RMI_Client
-Stack_Stub = Stack_Stub || require('./example_object.coffee').Stack_Stub
+WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client').WS_RMI_Client
+Stack_Stub = Stack_Stub || require('./example_object').Stack_Stub
 
 stack_stub = new Stack_Stub('br549')
 client = new WS_RMI_Client('ws://localhost:8085')

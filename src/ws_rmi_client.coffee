@@ -1,6 +1,6 @@
 #!/bin/env/ coffee
 #
-# ws_rmi_client.coffee
+# ws_rmi_client
 #
 
 WebSocket = window?.WebSocket || require('ws')

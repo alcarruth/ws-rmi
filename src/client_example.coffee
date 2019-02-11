@@ -1,7 +1,7 @@
 
 
-WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client.coffee').WS_RMI_Client
-Stack_Stub = Stack_Stub || require('./example_object.coffee').Stack_Stub
+WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client').WS_RMI_Client
+Stack_Stub = Stack_Stub || require('./example_object').Stack_Stub
 
 
 class StackApp
