@@ -1,6 +1,5 @@
-lib/
-lib5/
-lib6/
+build/
+dist/
 
 # Logs
 logs
