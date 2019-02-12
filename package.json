@@ -4,17 +4,26 @@
   "description": "Remote method invocation over websockets.",
   "main": "build/index.js",
   "scripts": {
-    "build": "npm run web && npm run coffee && npm run js6 && npm run js5",
-    "web": "npm run html && npm run cat",
-    "html": "cp src/client_example.html build/js6",
-    "cat": "cat src/ws_rmi_client.coffee src/example_object.coffee src/client_example.coffee > build/coffee/web_client.coffee",
-    "coffee": "cp ./src/*.coffee ./build/coffee",
-    "js6": "coffee -cMo ./build/js6 ./build/coffee/*.coffee",
-    "js5": "npm run js6 && babel ./build/js6 -d ./build/js5",
-    "lint": "eslint ./build/js5",
+    "build": "npm run clean && npm run example && npm run lib",
     "clean": "npm run rmdirs && npm run mkdirs",
     "rmdirs": "rm -rf ./build/js5/ ./build/js6/ ./build/coffee/",
-    "mkdirs": "mkdir -p ./build/js5/ ./build/js6/ ./build/coffee",
+
+    "mkdirs": "npm run mkcoffeedirs && npm run mkjs5dirs && npm run mkjs6dirs",
+    "mkjs6dirs": "mkdir -p ./build/js6/lib/ ./build/js6/example/",
+    "mkjs5dirs": "mkdir -p ./build/js5/lib/ ./build/js5/example/",
+    "mkcoffeedirs": "mkdir -p ./build/coffee/lib/ ./build/coffee/example/",
+
+    "example": "npm run example_html && npm run example_coffee && npm run example_js6",
+    "example_html": "cp src/example/client_example.html build/js6/example/",
+    "example_coffee": "cat src/coffee/ws_rmi_client.coffee src/example/example_object.coffee src/example/client_example.coffee > build/coffee/example/web_client.coffee",
+    "example_js6": "coffee -cMo ./build/js6/example/ ./build/coffee/lib/web_client.coffee",
+
+    "lib": "npm run lib_coffee && npm run lib_js6 && npm run lib_js5",
+    "lib_coffee": "cp ./src/coffee/*.coffee ./build/coffee/lib/",
+    "lib_js6": "coffee -cMo ./build/js6/lib ./build/coffee/lib/*.coffee",
+    "lib_js5": "babel ./build/js6/lib -d ./build/js5/lib",
+
+    "lint": "eslint ./build/js5/lib",
     "test": "mocha --require babel-core/register"
   },
   "repository": {
@@ -38,9 +47,9 @@
   },
   "homepage": "https://github.com/alcarruth/ws_rmi#readme",
   "devDependencies": {
+    "babel": "^6.23.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "coffeescript": "^2.3.2",
     "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",

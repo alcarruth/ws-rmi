@@ -1,12 +1,12 @@
 
-
 WS_RMI_Client = WS_RMI_Client || require('./ws_rmi_client').WS_RMI_Client
-Stack_Stub = Stack_Stub || require('./example_object').Stack_Stub
+Stack_Stub = Stack_Stub || require('./stack').Stack_Stub
+options = options || require('./options')
 
 
 class StackApp
 
-  constructor: (@url = 'ws://localhost:8085') ->
+  constructor: (@url = options.private.url()) ->
     @client = new WS_RMI_Client(@url)
     @stack = new Stack_Stub('br549')
     @client.register(@stack)
@@ -29,6 +29,6 @@ class StackApp
 
 
 if window?
-  window.app = new StackApp('wss://armazilla.net/wss/rmi_example')
+  window.app = new StackApp(options.public.url())
 else
-  exports.app = new StackApp('wss://armazilla.net/wss/rmi_example')
+  exports.app = new StackApp(options.private.url())

@@ -4,6 +4,8 @@
 #
 
 WebSocket = require('ws')
+http = require('http')
+https = require('https')
 
 log = (msg) ->
   console.log(msg)
@@ -61,4 +63,29 @@ class WS_RMI_Server_Common
     @registry[obj_id][name].apply(null, args)
 
 
-exports.WS_RMI_Server_Common = WS_RMI_Server_Common
+
+# WS_RMI_Server is the insecure version and can be run without root
+# access since it does not require access to the SSL credentials
+#
+class WS_RMI_Server extends WS_RMI_Server_Common
+  constructor: (host, port, path) ->
+    webserver = http.createServer(null)
+    super(webserver, host, port, path)
+    @protocol = 'ws'
+
+
+
+
+# WSS_RMI_Server is the secure version and requires
+# access to SSL credentials for the site.
+#
+class WSS_RMI_Server extends WS_RMI_Server_Common
+  constructor: (host, port, path, credentials) ->
+    webserver = https.createServer(null, credentials)
+    super(webserver, host, port, path)
+    @protocol = 'wss'
+
+
+
+exports.WS_RMI_Server = WS_RMI_Server
+exports.WSS_RMI_Server = WSS_RMI_Server

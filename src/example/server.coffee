@@ -4,9 +4,10 @@
 #
 
 WS_RMI_Server = require('./ws_rmi_server').WS_RMI_Server
-Stack = require('./example_object').Stack
+Stack = require('./stack').Stack
+options = require('./options').private
 
-server = new WS_RMI_Server('localhost', 8085, '.')
+server = new WS_RMI_Server(options.host, options.port, options.path)
 stack = new Stack('br549')
 
 server.register(stack)

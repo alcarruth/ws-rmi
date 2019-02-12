@@ -1,6 +1,3 @@
-#
-# example_object
-
 
 WS_RMI_Stub = WS_RMI_Stub || require('./ws_rmi_client').WS_RMI_Stub
 
@@ -28,6 +25,8 @@ class Stack_Stub extends WS_RMI_Stub
   @add_stub('pop')
 
 if window?
+  window.Stack = Stack
+  window.Stack_Stub = Stack_Stub
 else
   exports.Stack = Stack
   exports.Stack_Stub = Stack_Stub
