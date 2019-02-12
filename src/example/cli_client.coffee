@@ -1,5 +1,8 @@
 app = require('./client').app
 
-#repl = require('repl')
+cs_repl = require('coffeescript/repl')
 
-repl.start('> ').context.app = app
+#repl = require('repl')
+#app.setPrompt = repl.repl.setPrompt
+
+cs_repl.start('ws_rmi').context.app = app
