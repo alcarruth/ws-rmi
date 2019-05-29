@@ -1,4 +1,4 @@
-#!/bin/env coffee
+#!/usr/bin/env coffee
 #
 # server_example
 #

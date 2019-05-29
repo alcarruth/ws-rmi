@@ -2,26 +2,7 @@
   "name": "ws_rmi_dev",
   "version": "0.0.1",
   "description": "Remote method invocation over websockets.",
-  "main": "build/index.js",
-  "scripts": {
-    "build": "npm run clean && npm run example && npm run lib",
-    "clean": "npm run rmdirs && npm run mkdirs",
-    "rmdirs": "rm -rf ./build/js5/ ./build/js6/ ./build/coffee/",
-    "mkdirs": "npm run mkcoffeedirs && npm run mkjs5dirs && npm run mkjs6dirs",
-    "mkjs6dirs": "mkdir -p ./build/js6/lib/ ./build/js6/example/",
-    "mkjs5dirs": "mkdir -p ./build/js5/lib/ ./build/js5/example/",
-    "mkcoffeedirs": "mkdir -p ./build/coffee/lib/ ./build/coffee/example/",
-    "example": "npm run example_html && npm run example_coffee && npm run example_js6",
-    "example_html": "cp src/example/client_example.html build/js6/example/",
-    "example_coffee": "cat src/coffee/ws_rmi_client.coffee src/example/example_object.coffee src/example/client_example.coffee > build/coffee/example/web_client.coffee",
-    "example_js6": "coffee -cMo ./build/js6/example/ ./build/coffee/lib/web_client.coffee",
-    "lib": "npm run lib_coffee && npm run lib_js6 && npm run lib_js5",
-    "lib_coffee": "cp ./src/coffee/*.coffee ./build/coffee/lib/",
-    "lib_js6": "coffee -cMo ./build/js6/lib ./build/coffee/lib/*.coffee",
-    "lib_js5": "babel ./build/js6/lib -d ./build/js5/lib",
-    "lint": "eslint ./build/js5/lib",
-    "test": "mocha --require babel-core/register"
-  },
+  "main": "index.coffee",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alcarruth/ws_rmi.git"
@@ -42,20 +23,11 @@
     "url": "https://github.com/alcarruth/ws_rmi/issues"
   },
   "homepage": "https://github.com/alcarruth/ws_rmi#readme",
-  "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "eslint": "^5.13.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.16.0",
-    "mocha": "^5.2.0"
-  },
+  "devDependencies": {},
   "dependencies": {
     "coffeescript": "^2.3.2",
     "http": "0.0.0",
     "https": "^1.0.0",
-    "ws": "^6.1.3",
-    "ws_rmi": "file:build/coffee"
+    "ws": "^6.1.3"
   }
 }

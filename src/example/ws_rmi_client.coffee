@@ -1,1 +1,0 @@
-../coffee/ws_rmi_client.coffee

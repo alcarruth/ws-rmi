@@ -1,3 +1,5 @@
+#!/usr/bin/env coffee
+
 app = require('./client').app
 
 cs_repl = require('coffeescript/repl')
