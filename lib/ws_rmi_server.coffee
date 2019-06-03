@@ -15,7 +15,10 @@ log = (msg) ->
 #
 class WS_RMI_Server_Common
 
-  constructor: (@server, @host, @port, @path) ->
+  constructor: (@server, @options) ->
+    @host = @options.host
+    @port = @options.port
+    @path = @options.path
     @registry = {}
     @clients = []
     @wss = new WebSocket.Server(server: @server)
@@ -68,11 +71,10 @@ class WS_RMI_Server_Common
 # access since it does not require access to the SSL credentials
 #
 class WS_RMI_Server extends WS_RMI_Server_Common
-  constructor: (host, port, path) ->
+  constructor: (options) ->
     webserver = http.createServer(null)
-    super(webserver, host, port, path)
+    super(webserver, options)
     @protocol = 'ws'
-
 
 
 
@@ -80,9 +82,9 @@ class WS_RMI_Server extends WS_RMI_Server_Common
 # access to SSL credentials for the site.
 #
 class WSS_RMI_Server extends WS_RMI_Server_Common
-  constructor: (host, port, path, credentials) ->
+  constructor: (options, credentials) ->
     webserver = https.createServer(null, credentials)
-    super(webserver, host, port, path)
+    super(webserver, options)
     @protocol = 'wss'
 
 
