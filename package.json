@@ -2,7 +2,7 @@
   "name": "ws_rmi",
   "version": "0.0.1",
   "description": "Remote method invocation over websockets.",
-  "main": "index.coffee",
+  "main": "index.js",
   "scripts": {
     "clean": "./bin/clean.sh",
     "build": "./bin/build.sh"
