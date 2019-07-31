@@ -1,7 +1,7 @@
-#!/usr/bin/env coffee
+#!/usr/bin/env node
 
-# file: index.js
-# package: ws_rmi
+// file: index.js
+// package: ws_rmi
 
 require('coffeescript/register')
 
