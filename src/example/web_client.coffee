@@ -1,3 +1,4 @@
+#!/bin/env/ coffee
 #
 # ws_rmi_client
 #
@@ -9,8 +10,11 @@ log = (msg) ->
 
 class WS_RMI_Client
 
-  constructor: (options) ->
-    @url = options.url
+  constructor: (@options) ->
+    { @host, @port, @path @protocol} = @options
+
+    @url = "#{@protocol}://#{@host}:#{@port}"
+
     @registry = {}
     @cnt = 0
     @cb_hash = {}
@@ -68,7 +72,7 @@ class WS_RMI_Stub
     @::[name] = (args..., cb) ->
       @invoke(name, args, cb)
 
-  constructor: (@id, @def_cb = ->) ->
+  constructor: (@id) ->
 
   log_cb: (err, res) ->
     console.log(res)
@@ -77,17 +81,21 @@ class WS_RMI_Stub
     @ws_rmi_client = ws_rmi_client
 
   invoke: (name, args, cb) =>
-    cb = cb || @def_cb
+    cb = cb || ->
     @ws_rmi_client.send_request(@id, name, args, cb)
 
-if exports?
-  exports.Client = WS_RMI_Client
-  exports.Stub = WS_RMI_Stub
+if window?
+  window.ws_rmi =
+    WS_RMI_Client: WS_RMI_Client
+    WS_RMI_Stub: WS_RMI_Stub
+else
+  exports.WS_RMI_Client = WS_RMI_Client
+  exports.WS_RMI_Stub = WS_RMI_Stub
 #
 # example/stack.coffee
 #
 
-WS_RMI_Stub = WS_RMI_Stub || require('../lib').Stub
+WS_RMI_Stub = WS_RMI_Stub || require('../lib').WS_RMI_Stub
 
 class Stack
 
@@ -108,6 +116,7 @@ class Stack
 
 
 class Stack_Stub extends WS_RMI_Stub
+  #@remote_methods('push','pop')
   @add_stub('push')
   @add_stub('pop')
 
@@ -115,57 +124,44 @@ class Stack_Stub extends WS_RMI_Stub
 if exports?
   exports.Stack = Stack
   exports.Stack_Stub = Stack_Stub
-#
+
 # example/settings.coffee
-#
-
-app_id = 'br549'
-mk_options = (host = 'localhost', port = 8080, path='', protocol='ws') ->
-  return
-    host: host
-    port: port
-    path: path
-    protocol: protocol
-    url: "#{protocol}://#{host}:#{port}/#{path}"
-
-local = mk_options(
-  host = "localhost"
-  port = 8085
-  path = ""
-  protocol = 'ws'
-  )
-
-external = mk_options(
-  host = "armazilla.net"
-  port = 443
-  path = "/wss/rmi_example"
-  protocol = 'wss'
-  )
 
 settings =
-  local: local
-  external: external
-  app_id: app_id
 
-if exports?
-  exports.local = local
-  exports.external = external
-  exports.app_id = app_id
+  app_id: 'br549'
+
+  local:
+    host: "localhost"
+    port: 8085
+    path: ""
+    protocol: 'ws'
+
+  external:
+    host: "armazilla.net"
+    port: 443
+    path: "/wss/rmi_example"
+    protocol: 'wss'
+
+if window?
+  window.settings = settings
+
+else
+  exports.app_id = settings.app_id
+  exports.local = settings.local
+  exports.external = settings.external
 #
 # example/client.coffee
 #
 
-WS_RMI_Client = WS_RMI_Client || require('../lib/ws_rmi_client').Client
+#WS_RMI_Client = WS_RMI_Client || require('ws_rmi').WS_RMI_Client
+WS_RMI_Client = WS_RMI_Client || require('../lib').WS_RMI_Client
 Stack_Stub = Stack_Stub || require('./stack').Stack_Stub
 settings = settings || require('./settings')
-app_id = settings.app_id
-
-
 
 class Example_Client
 
   constructor: (@app_id, @options) ->
-    @options
     @def_cb = (x) -> console.log(x)
     @stack = new Stack_Stub(@app_id, @def_cb)
     @client = new WS_RMI_Client(@options)
@@ -186,10 +182,12 @@ class Example_Client
 
 if window?
   # running in browser
+  app_id = settings.app_id
   options = settings.external
   window.app = new Example_Client(app_id, options)
 
 else
+  app_id = settings.app_id
   options = settings.local
   app = new Example_Client(app_id, options)
 

@@ -1,14 +1,11 @@
-#!/usr/bin/env coffee
 #
 # example/client.coffee
 #
 
-WS_RMI_Client = WS_RMI_Client || require('ws_rmi_lib').WS_RMI_Client
+#WS_RMI_Client = WS_RMI_Client || require('ws_rmi').WS_RMI_Client
+WS_RMI_Client = WS_RMI_Client || require('../lib').WS_RMI_Client
 Stack_Stub = Stack_Stub || require('./stack').Stack_Stub
 settings = settings || require('./settings')
-app_id = settings.app_id
-
-
 
 class Example_Client
 
@@ -34,10 +31,12 @@ class Example_Client
 
 if window?
   # running in browser
+  app_id = settings.app_id
   options = settings.external
   window.app = new Example_Client(app_id, options)
 
 else
+  app_id = settings.app_id
   options = settings.local
   app = new Example_Client(app_id, options)
 

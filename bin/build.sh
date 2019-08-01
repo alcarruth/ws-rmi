@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-rm -rf ./example/ ./lib/
-mkdir -p ./example/ ./lib/
+source ./bin/defs.sh;
 
-cp src/example/*.coffee ./example/
-cp src/lib/*.coffee ./lib/
+clean;
+build;

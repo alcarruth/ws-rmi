@@ -2,7 +2,7 @@
 # example/stack.coffee
 #
 
-WS_RMI_Stub = WS_RMI_Stub || require('ws_rmi_lib').WS_RMI_Stub
+WS_RMI_Stub = WS_RMI_Stub || require('../lib').WS_RMI_Stub
 
 class Stack
 

@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-rm -rf example/ lib/
+source ./bin/defs.sh;
+
+clean;

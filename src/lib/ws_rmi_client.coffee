@@ -10,7 +10,11 @@ log = (msg) ->
 
 class WS_RMI_Client
 
-  constructor: (@url) ->
+  constructor: (@options) ->
+    { @host, @port, @path, @protocol } = @options
+
+    @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
+
     @registry = {}
     @cnt = 0
     @cb_hash = {}

@@ -15,18 +15,24 @@ log = (msg) ->
 #
 class WS_RMI_Server_Common
 
-  constructor: (@server, @options) ->
-    @host = @options.host
-    @port = @options.port
-    @path = @options.path
+  constructor: (@server, options) ->
+
+    { @host, @port, @path } = options
+
+    @url = "#{@protocol}://#{@host}:#{@port}"
+
     @registry = {}
     @clients = []
+
     @wss = new WebSocket.Server(server: @server)
     @wss.on('connection', (client) =>
+
       client.on('message', (msg) =>
         @handle_request(msg, client))
+
       client.on('close', =>
         log("client disconnected: #{client._socket.server._connectionKey}"))
+
       @clients.push(client)
       log("client added: #{client._socket.server._connectionKey}"))
 
@@ -35,7 +41,7 @@ class WS_RMI_Server_Common
   start: =>
     try
       @server.listen(@port, @host)
-      log("server listening at url: #{@protocol}://#{@host}:#{@port}")
+      log("server listening at url: #{@url}")
     catch error
      console.log error
 
