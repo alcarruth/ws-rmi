@@ -11,17 +11,15 @@ function clean {
 
 function build {
 
-  coffee -c -o ./lib/ ./src/lib/ws_rmi_client.coffee
-  coffee -c -o ./lib/ ./src/lib/ws_rmi_server.coffee
-  coffee -c -o ./lib/ ./src/lib/index.coffee
+  cp ./src/lib/ws_rmi_client.coffee ./lib/
+  cp ./src/lib/ws_rmi_server.coffee ./lib/
+  cp ./src/lib/index.coffee ./lib/
 
-  coffee -c -o ./example/ ./src/example/client.coffee
-  coffee -c -o ./example/ ./src/example/server.coffee
-  coffee -c -o ./example/ ./src/example/stack.coffee
-  coffee -c -o ./example/ ./src/example/index.coffee
-  coffee -c -o ./example/ ./src/example/settings.coffee
-
+  cp ./src/example/client.coffee ./example/
+  cp ./src/example/server.coffee ./example/
+  cp ./src/example/stack.coffee ./example/
+  cp ./src/example/index.coffee ./example/
+  cp ./src/example/settings.coffee ./example/
   cp ./src/example/index.html ./example/
   cp ./src/example/build.sh ./example/
-  cp ./lib/ws_rmi_client.js ./example/
 }

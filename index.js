@@ -3,7 +3,7 @@
 // file: index.js
 // package: ws_rmi
 
-lib = require('./lib/index.js')
+lib = require('./lib/index')
 // example = require('./example/index.js')
 
 exports.WS_RMI_Client = lib.WS_RMI_Client
