@@ -3,6 +3,11 @@
 # ws_rmi_client
 #
 
+# TODO:
+#
+#  - Try this with promises
+#
+
 WebSocket = window?.WebSocket || require('ws')
 
 log = (msg) ->
@@ -21,13 +26,17 @@ class WS_RMI_Client
     @stubs = []
 
   connect: (url) =>
-    @url = url if url
-    @server = new WebSocket(@url)
-    @server.onopen = @onOpen
-    @server.onmessage = @onMessage
-    @server.onclose = @onClose
-    @server.onerror = @onError
-    true
+    try
+      @url = url if url
+      @server = new WebSocket(@url)
+      @server.onopen = @onOpen
+      @server.onmessage = @onMessage
+      @server.onclose = @onClose
+      @server.onerror = @onError
+      true
+    catch error
+      console.log("WS_RMI_Client: could not connect!")
+      console.log("  url: #{url}")
 
   onOpen: (evt) =>
     log("connected to rmi server at #{@url}")
@@ -46,13 +55,14 @@ class WS_RMI_Client
 
   register: (stub) =>
     @stubs.push(stub)
-    stub.register(this)
 
-  send_request: (obj_id, name, args, cb) =>
+  send_request: (obj_id, method, args, cb) =>
     cb_id = @cnt++
     @cb_hash[cb_id] = cb? && cb || console.log
-    rmi_args = { obj_id: obj_id, name: name, args: args, cb_id: cb_id }
-    @server.send( JSON.stringify(rmi_args))
+    msg_obj = { obj_id: obj_id, method: method, args: args, cb_id: cb_id }
+    console.log("\nWS_RMI_Client: ")
+    console.log(msg_obj)
+    @server.send( JSON.stringify(msg_obj))
 
   handle_response: (msg) =>
     [cb_id, res] = JSON.parse(msg)
@@ -89,5 +99,5 @@ if window?
     WS_RMI_Client: WS_RMI_Client
     WS_RMI_Stub: WS_RMI_Stub
 else
-  exports.WS_RMI_Client = WS_RMI_Client
-  exports.WS_RMI_Stub = WS_RMI_Stub
+  exports.Client = WS_RMI_Client
+  exports.Client_Stub = WS_RMI_Stub

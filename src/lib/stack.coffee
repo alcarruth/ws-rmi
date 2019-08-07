@@ -1,11 +1,6 @@
 #!/usr/bin/env coffee
 #
-#  example/stack.coffee
-#
-
-# TODO:
-#
-#  - Try this with promises
+# stack.coffee
 #
 
 class Stack_CB
@@ -14,6 +9,8 @@ class Stack_CB
     @stack = []
 
   push: (x, cb) =>
+    console.log("\nStack_CB")
+    console.log(x:x, cb:cb)
     @stack.push(x)
     console.log @stack
     cb(true)
@@ -22,6 +19,4 @@ class Stack_CB
     cb( @stack.pop())
     console.log @stack
 
-
-if exports?
-  exports.Stack_CB = Stack_CB
+exports.Stack = Stack_CB
