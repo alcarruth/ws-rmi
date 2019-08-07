@@ -1,10 +1,12 @@
 # `ws_rmi`
 
 Package `ws_rmi`, is a coffeescript implementation for *remote method
-invocation* over websockets.  It is being developed in conjunction with my
-`db_worm` and `tickets_coffee` packages.  `db_worm` has a component `db_rmi`
-which basically just extends this project for the specific case where
-the remote objects represent database tables and rows.
+invocation* over websockets.  It is being developed in conjunction
+with my [`db_worm`](https://github.com/alcarruth/db_worm) and
+[`tickets_coffee`](https://github.com/alcarruth/tickets_coffee)
+packages.  `db_worm` has a component `db_rmi` which basically just
+extends this project for the specific case where the remote objects
+represent database tables and rows.
 
 ## Overview
 
