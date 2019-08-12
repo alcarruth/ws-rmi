@@ -6,7 +6,7 @@ options =
   port: 8086
   path: ''
   protocol: 'ws'
-  log_level: 0
+  log_level: 2
 
 
 for k,v of options

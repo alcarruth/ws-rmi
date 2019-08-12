@@ -4,9 +4,7 @@
 # ws_rmi_example.coffee
 #
 
-lib = require('../lib/')
-{ WS_RMI_Server, WS_RMI_Client } = lib
-{ WS_RMI_Connection, WS_RMI_Object } = lib
+ws_rmi = require('../lib/')
 
 name = 'stack'
 app_id = 'example_app'
@@ -37,31 +35,33 @@ class Stack
 
 
 
+
 # A Stack_Connection is a WS_RMI_Connection instance with
 # a WS_RMI_Object created from a Stack.  The WS_RMI_Object
 # constructor will register the object with the connection.
 #
-class Stack_Connection extends WS_RMI_Connection
+class Stack_Connection extends ws_rmi.Connection
   constructor: (owner, ws) ->
     super(owner, ws, 2)
-    stack_obj = new WS_RMI_Object(
-      'rmi_example', new Stack(), ['pop', 'push'], this)
 
 
 
 # An extension which specifies the Connection arg to WS_RMI_Client
 #
-class Stack_Client extends WS_RMI_Client
+class Stack_Client extends ws_rmi.Client
   constructor: (options) ->
-    super(options, Stack_Connection)
+    console.log 'Stack_Client'
+    super(options, [])
 
 
 # An extension which specifies the Connection arg to WS_RMI_Server
 #
-class Stack_Server extends WS_RMI_Server
+class Stack_Server extends ws_rmi.Server
   constructor: (options) ->
-    super(options, Stack_Connection)
-
+    console.log 'Stack_Server'
+    stack_obj = new ws_rmi.Object(
+      'rmi_example', new Stack(), ['pop', 'push'])
+    super(options, [stack_obj])
 
 
 if not window?

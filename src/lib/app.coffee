@@ -12,8 +12,6 @@ inspect = (obj) ->
     colors: true
   util.inspect(obj, options)
 
-log_level = 1
-
 log = (heading, args...) ->
   args = args.map(inspect).join('\n')
   console.log("\n\n#{heading}\n#{args}\n\n")
@@ -38,6 +36,7 @@ class WS_RMI_Connection
   #
   constructor: (@owner, @ws, log_level) ->
     @log_level = log_level || 0
+    console.log('WS_RMI_Connection #1')
 
     # TODO: Need a unique id here. Does this work ok?
     #@id = "#{ws._socket.server._connectionKey}"
@@ -71,9 +70,9 @@ class WS_RMI_Connection
     @admin =
       id: 'admin',
       name: 'admin',
-      init: @init,
-      method_names: ['init']
-    @register(@admin)
+      get_stub_specs: @get_stub_specs,
+      method_names: ['get_stub_specs']
+    @registry['admin'] = @admin
     @exclude.push('admin')
 
     @stubs = []
@@ -87,12 +86,19 @@ class WS_RMI_Connection
     @rmi_cnt = 0
     @rmi_hash = {}
 
+    console.log('WS_RMI_Connection #2')
+    # add remote objects
+    for obj in @owner.objects
+      @add_object(obj)
+
+    console.log('WS_RMI_Connection #3')
     # Events are mapped to handler methods defined below.
     @ws.onopen = @onOpen
     @ws.onmessage = @onMessage
     @ws.onclose = @onClose
     @ws.onerror = @onError
     true
+    console.log('WS_RMI_Connection #4')
 
   #--------------------------------------------------------------------
   # Event handlers
@@ -135,20 +141,22 @@ class WS_RMI_Connection
   #----------------------------------------------------------
   # Object registry methods
 
-
-  add_object: (name, obj, method_names) =>
-    new ws_rmi.Object(name, obj, method_names, this)
-
   # Register a WS_RMI_Object for RMI
+  add_object: (obj) =>
+    @registry[obj.id] = obj
+    console.log('WS_RMI_Connection #5')
+    obj.register(this)
+    console.log('WS_RMI_Connection #6')
+
   register: (obj) =>
     @registry[obj.id] = obj
 
   # I refuse to comment on what this one does.
-  deregister: (id) =>
+  del_object: (id) =>
     delete @registry[id]
 
   # Method init() is a built-in remote method.
-  init: =>
+  get_stub_specs: =>
 
     new Promise((resolve, reject) =>
       try
@@ -167,11 +175,11 @@ class WS_RMI_Connection
         reject("Error: init():", specs))
 
   # Invoke remote init()
-  init_stub: =>
+  init_stubs: =>
 
     cb = (result) =>
       if @log_level > 2
-        log("init_stub(): cb(): result:", result)
+        log("init_stubs(): cb(): result:", result)
       for id, spec of result
         { name, method_names } = spec
         stub = new WS_RMI_Stub(id, name, method_names, this)
@@ -182,7 +190,8 @@ class WS_RMI_Connection
         log("init_stub(): eh(): received error:", error)
       return new Error("init_stub(): eh(): received error:")
 
-    @send_request('admin', 'init', []).then(cb).catch(eh)
+    console.log('init_stub')
+    @send_request('admin', 'get_stub_specs', []).then(cb).catch(eh)
 
 
   #--------------------------------------------------------------------
@@ -299,16 +308,17 @@ random_id = (name) ->
 #
 class WS_RMI_Object
 
-  constructor: (@name, @obj, @method_names, @connection, log_level) ->
+  constructor: (@name, @obj, @method_names, log_level) ->
     @log_level = log_level || 0
-
     @id = random_id(@name)
-    @connection.register(this)
 
     for name in @method_names
       this[name] = ((name) =>
         (args...) ->
           @invoke(name, args))(name)
+
+  register: (connection) =>
+    @connection = connection
 
   # Method invoke() is called by connection.recv_request()
   # it executes the appropriate method and returns a promise.

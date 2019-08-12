@@ -5,7 +5,7 @@
 
 # works both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
-
+ws_rmi = require('./')
 
 
 class WS_RMI_Client
@@ -13,9 +13,9 @@ class WS_RMI_Client
   # Connnection should be a sub-class of WS_RMI_Connection in order to
   # create and register desired WS_RMI_Objects at construction.
   #
-  constructor: (@options, @Connection) ->
+  constructor: (options, @objects, @log_level) ->
     @id = "WS_RMI_Client-#{Math.random().toString()[2..]}"
-    { @host, @port, @path, @protocol } = @options
+    { @host, @port, @path, @protocol, @log_level } = options
     @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
 
   connect: (url) =>
@@ -23,7 +23,8 @@ class WS_RMI_Client
       @url = url if url
       ws = new WebSocket(@url)
       console.log('got websocket')
-      @connection = new @Connection(this, ws)
+      console.log(ws_rmi)
+      @connection = new ws_rmi.Connection(this, ws, @log_level)
       console.log("Connection added, id: #{@connection.id}")
       return
 
