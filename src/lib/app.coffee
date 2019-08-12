@@ -135,6 +135,10 @@ class WS_RMI_Connection
   #----------------------------------------------------------
   # Object registry methods
 
+
+  add_object: (name, obj, method_names) =>
+    new ws_rmi.Object(name, obj, method_names, this)
+
   # Register a WS_RMI_Object for RMI
   register: (obj) =>
     @registry[obj.id] = obj

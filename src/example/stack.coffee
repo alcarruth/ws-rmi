@@ -42,7 +42,6 @@ class Stack
 # constructor will register the object with the connection.
 #
 class Stack_Connection extends WS_RMI_Connection
-
   constructor: (owner, ws) ->
     super(owner, ws, 2)
     stack_obj = new WS_RMI_Object(
