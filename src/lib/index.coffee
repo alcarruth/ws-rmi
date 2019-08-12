@@ -1,9 +1,12 @@
 #!/usr/bin/env coffee
 
-{ WS_RMI_Client, WS_RMI_Stub } = require('./ws_rmi_client')
-{ WS_RMI_Server, WSS_RMI_Server } = require('./ws_rmi_server')
+{ WS_RMI_Client } = require('./client')
+{ WS_RMI_Server } = require('./server')
+{ WS_RMI_Connection, WS_RMI_Object, WS_RMI_Stub } = require('./app')
 
-exports.WS_RMI_Client = WS_RMI_Client
-exports.WS_RMI_Stub = WS_RMI_Stub
 exports.WS_RMI_Server = WS_RMI_Server
-exports.WSS_RMI_Server = WSS_RMI_Server
+exports.WS_RMI_Client = WS_RMI_Client
+
+exports.WS_RMI_Connection = WS_RMI_Connection
+exports.WS_RMI_Object = WS_RMI_Object
+exports.WS_RMI_Stub = WS_RMI_Stub
