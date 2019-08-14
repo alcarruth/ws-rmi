@@ -7,7 +7,8 @@ WebSocket = require('ws')
 http = require('http')
 https = require('https')
 
-ws_rmi = require('./')
+if not window?
+  { WS_RMI_Connection } = require('./app')
 
 # WS_RMI_Server_Common contains code common to both
 # WS_RMI_Server and WSS_RMI_Server defined below
@@ -17,18 +18,18 @@ class WS_RMI_Server_Common
   # Connection should extend WS_RMI_Connection in
   # order to add desired WS_RMI_Objects at construction.
   #
-  constructor: (@server, options, @objects) ->
+  constructor: (@server, @options, @objects) ->
     @id = "WS_RMI_Server-#{Math.random().toString()[2..]}"
     @connections = []
 
-    { @host, @port, @path, @protocol, @log_level } = options
+    { @host, @port, @path, @protocol, @log_level } = @options
     @url = "#{@protocol}://#{@host}:#{@port}"
 
     @wss = new WebSocket.Server(server: @server)
     @wss.on('connection', (ws) =>
       try
         console.log("trying new connection: #{ws}")
-        conn = new ws_rmi.Connection(this, ws, @log_level)
+        conn = new WS_RMI_Connection(this, ws, @log_level)
         @connections.push(conn)
         console.log("connection added: #{conn.id}")
       catch error
@@ -70,6 +71,10 @@ class WSS_RMI_Server extends WS_RMI_Server_Common
     @protocol = 'wss'
 
 
+if not window?
+  exports.WS_RMI_Server = WS_RMI_Server
+  exports.WSS_RMI_Server = WSS_RMI_Server
 
-exports.WS_RMI_Server = WS_RMI_Server
-exports.WSS_RMI_Server = WSS_RMI_Server
+else
+  window.WS_RMI_Server = WS_RMI_Server
+  window.WSS_RMI_Server = WSS_RMI_Server

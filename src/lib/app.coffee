@@ -3,7 +3,8 @@
 #  ws_rmi_connection
 #
 
-util = require('util')
+if not window?
+  util = require('util')
 
 inspect = (obj) ->
   options =
@@ -36,7 +37,6 @@ class WS_RMI_Connection
   #
   constructor: (@owner, @ws, log_level) ->
     @log_level = log_level || 0
-    console.log('WS_RMI_Connection #1')
 
     # TODO: Need a unique id here. Does this work ok?
     #@id = "#{ws._socket.server._connectionKey}"
@@ -75,7 +75,7 @@ class WS_RMI_Connection
     @registry['admin'] = @admin
     @exclude.push('admin')
 
-    @stubs = []
+    @stubs = {}
 
     # RMI's are given a unique number and the Promise's resolve() and
     # reject() functions are kept as callbacks to be executed when an
@@ -86,19 +86,16 @@ class WS_RMI_Connection
     @rmi_cnt = 0
     @rmi_hash = {}
 
-    console.log('WS_RMI_Connection #2')
     # add remote objects
     for obj in @owner.objects
       @add_object(obj)
 
-    console.log('WS_RMI_Connection #3')
     # Events are mapped to handler methods defined below.
     @ws.onopen = @onOpen
     @ws.onmessage = @onMessage
     @ws.onclose = @onClose
     @ws.onerror = @onError
     true
-    console.log('WS_RMI_Connection #4')
 
   #--------------------------------------------------------------------
   # Event handlers
@@ -144,9 +141,7 @@ class WS_RMI_Connection
   # Register a WS_RMI_Object for RMI
   add_object: (obj) =>
     @registry[obj.id] = obj
-    console.log('WS_RMI_Connection #5')
     obj.register(this)
-    console.log('WS_RMI_Connection #6')
 
   register: (obj) =>
     @registry[obj.id] = obj
@@ -183,14 +178,13 @@ class WS_RMI_Connection
       for id, spec of result
         { name, method_names } = spec
         stub = new WS_RMI_Stub(id, name, method_names, this)
-        @stubs.push(stub)
+        @stubs[stub.name] = stub
 
     eh = (error) =>
       if @log_level > 2
         log("init_stub(): eh(): received error:", error)
       return new Error("init_stub(): eh(): received error:")
 
-    console.log('init_stub')
     @send_request('admin', 'get_stub_specs', []).then(cb).catch(eh)
 
 
@@ -337,7 +331,7 @@ class WS_RMI_Object
     @obj[method_name].apply(@obj, args) # .catch(eh)
 
 
-#-----------------------------------------------------------------;-----
+#-----------------------------------------------------------------------
 # WS_RMI_Stub
 
 class WS_RMI_Stub
@@ -366,6 +360,12 @@ class WS_RMI_Stub
 
 #----------------------------------------------------------------------
 
-exports.WS_RMI_Connection = WS_RMI_Connection
-exports.WS_RMI_Object = WS_RMI_Object
-exports.WS_RMI_Stub = WS_RMI_Stub
+if not window?
+  exports.WS_RMI_Connection = WS_RMI_Connection
+  exports.WS_RMI_Object = WS_RMI_Object
+  exports.WS_RMI_Stub = WS_RMI_Stub
+
+else
+  window.WS_RMI_Connection = WS_RMI_Connection
+  window.WS_RMI_Object = WS_RMI_Object
+  window.WS_RMI_Stub = WS_RMI_Stub
