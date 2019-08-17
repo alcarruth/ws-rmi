@@ -7,8 +7,7 @@ WebSocket = require('ws')
 http = require('http')
 https = require('https')
 
-if not window?
-  { WS_RMI_Connection } = require('./app')
+{ WS_RMI_Connection } = require('./app')
 
 # WS_RMI_Server_Common contains code common to both
 # WS_RMI_Server and WSS_RMI_Server defined below
@@ -71,10 +70,5 @@ class WSS_RMI_Server extends WS_RMI_Server_Common
     @protocol = 'wss'
 
 
-if not window?
-  exports.WS_RMI_Server = WS_RMI_Server
-  exports.WSS_RMI_Server = WSS_RMI_Server
-
-else
-  window.WS_RMI_Server = WS_RMI_Server
-  window.WSS_RMI_Server = WSS_RMI_Server
+exports.WS_RMI_Server = WS_RMI_Server
+exports.WSS_RMI_Server = WSS_RMI_Server

@@ -6,8 +6,7 @@
 # works both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
 
-if not window?
-  { WS_RMI_Connection } = require('./app')
+{ WS_RMI_Connection } = require('./app')
 
 
 class WS_RMI_Client
@@ -35,10 +34,4 @@ class WS_RMI_Client
       new Error(msg)
 
 
-
-
-if not window?
-  exports.WS_RMI_Client = WS_RMI_Client
-
-else
-  window.WS_RMI_Client = WS_RMI_Client
+exports.WS_RMI_Client = WS_RMI_Client

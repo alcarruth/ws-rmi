@@ -3,19 +3,25 @@
 #  ws_rmi_connection
 #
 
+###
 if not window?
-  util = require('util')
+  inspect = require('util').inspect
 
-inspect = (obj) ->
-  options =
-    showHidden: false
-    depth: null
-    colors: true
-  util.inspect(obj, options)
+  inspect = (obj) ->
+    options =
+      showHidden: false
+      depth: null
+      colors: true
+    util.inspect(obj, options)
 
-log = (heading, args...) ->
-  args = args.map(inspect).join('\n')
-  console.log("\n\n#{heading}\n#{args}\n\n")
+  log = (heading, args...) ->
+    args = args.map(inspect).join('\n')
+    console.log("\n\n#{heading}\n#{args}\n\n")
+
+else
+###
+
+log = console.log
 
 #----------------------------------------------------------------------
 
@@ -360,12 +366,6 @@ class WS_RMI_Stub
 
 #----------------------------------------------------------------------
 
-if not window?
-  exports.WS_RMI_Connection = WS_RMI_Connection
-  exports.WS_RMI_Object = WS_RMI_Object
-  exports.WS_RMI_Stub = WS_RMI_Stub
-
-else
-  window.WS_RMI_Connection = WS_RMI_Connection
-  window.WS_RMI_Object = WS_RMI_Object
-  window.WS_RMI_Stub = WS_RMI_Stub
+exports.WS_RMI_Connection = WS_RMI_Connection
+exports.WS_RMI_Object = WS_RMI_Object
+exports.WS_RMI_Stub = WS_RMI_Stub

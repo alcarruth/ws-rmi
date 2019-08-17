@@ -1,25 +1,25 @@
 #!/bin/bash
 
+root_dir="/var/www/git/projects/ws-rmi"
+
 function clean {
+
+  pushd ${root_dir}
 
   rm -rf ./example/*
   rm -rf ./lib/*
 
   mkdir -p ./example
   mkdir -p ./lib
+
+  popd
 }
 
 function build {
 
-  cp ./src/lib/ws_rmi_client.coffee ./lib/
-  cp ./src/lib/ws_rmi_server.coffee ./lib/
-  cp ./src/lib/index.coffee ./lib/
+  pushd ${root_dir}/src/lib
 
-  cp ./src/example/client.coffee ./example/
-  cp ./src/example/server.coffee ./example/
-  cp ./src/example/stack.coffee ./example/
-  cp ./src/example/index.coffee ./example/
-  cp ./src/example/settings.coffee ./example/
-  cp ./src/example/index.html ./example/
-  cp ./src/example/build.sh ./example/
+  coffee -c -o ${root_dir}/lib *.coffee
+
+  popd
 }
