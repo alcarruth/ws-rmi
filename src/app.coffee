@@ -3,26 +3,6 @@
 #  ws_rmi_connection
 #
 
-###
-if not window?
-  inspect = require('util').inspect
-
-  inspect = (obj) ->
-    options =
-      showHidden: false
-      depth: null
-      colors: true
-    util.inspect(obj, options)
-
-  log = (heading, args...) ->
-    args = args.map(inspect).join('\n')
-    console.log("\n\n#{heading}\n#{args}\n\n")
-
-else
-###
-
-log = console.log
-
 #----------------------------------------------------------------------
 
 class WS_RMI_Connection
@@ -41,11 +21,13 @@ class WS_RMI_Connection
   # WS_RMI_Server.  My current thinking is that that functionality
   # might be better off here.
   #
-  constructor: (@owner, @ws, log_level) ->
-    @log_level = log_level || 0
+  constructor: (@owner, @ws, options) ->
+    @log_level = options.log_level || 2
+    @log = options.log || console.log
+    @waiter = null
 
     # TODO: Need a unique id here. Does this work ok?
-    #@id = "#{ws._socket.server._connectionKey}"
+    # @id = "#{ws._socket.server._connectionKey}"
     @id = "connection"
 
     # WS_RMI_Objects are registered here with their id as key.  The
@@ -78,6 +60,7 @@ class WS_RMI_Connection
       name: 'admin',
       get_stub_specs: @get_stub_specs,
       method_names: ['get_stub_specs']
+
     @registry['admin'] = @admin
     @exclude.push('admin')
 
@@ -97,10 +80,11 @@ class WS_RMI_Connection
       @add_object(obj)
 
     # Events are mapped to handler methods defined below.
-    @ws.onopen = @onOpen
+    @ws.onOpen = @onOpen
     @ws.onmessage = @onMessage
     @ws.onclose = @onClose
     @ws.onerror = @onError
+
     true
 
   #--------------------------------------------------------------------
@@ -115,13 +99,13 @@ class WS_RMI_Connection
   # connected again.
   #
   onOpen: (evt) =>
-    if @log_level > 0
-      log("connection opened: id:", @id)
+    @log("connection opened: id:", @id)
+    @init_stubs()
 
   # This is the "main event".  It's what we've all been waiting for!
   onMessage: (evt) =>
     if @log_level > 2
-      log("onMessage:", evt.data)
+      @log("onMessage:", evt.data)
     @recv_message(evt.data)
 
   # TODO: perhaps somebody should be notified here ?-)
@@ -130,16 +114,13 @@ class WS_RMI_Connection
   #
   onClose: (evt) =>
     if @log_level > 0
-      log("peer disconnected: id:", @id)
+      @log("peer disconnected: id:", @id)
 
   # TODO: think of something to do here.
   onError: (evt) =>
-
-  disconnect: =>
-    if @log_level > 0
-      log("disconnecting: id: ", @id)
-    @ws.close()
-
+    @log(evt.data)
+    if @waiter
+      clearInterval(@waiter)
 
   #----------------------------------------------------------
   # Object registry methods
@@ -156,7 +137,7 @@ class WS_RMI_Connection
   del_object: (id) =>
     delete @registry[id]
 
-  # Method init() is a built-in remote method.
+  # Method get_stub_specs() is a built-in remote method.
   get_stub_specs: =>
 
     new Promise((resolve, reject) =>
@@ -167,30 +148,34 @@ class WS_RMI_Connection
             specs[id] =
               name: obj.name
               method_names: obj.method_names
-        if @log_level > 2
-          log("init():", specs)
+        if @log_level > 0
+          @log("get_stub_specs():", specs)
         resolve(specs)
 
       catch error
-        log("Error: init():", specs, error)
+        @log("Error: init():", specs, error)
         reject("Error: init():", specs))
 
-  # Invoke remote init()
+  # Invoke remote get_stub_specs()
   init_stubs: =>
 
     cb = (result) =>
-      if @log_level > 2
-        log("init_stubs(): cb(): result:", result)
+      if @log_level > -1
+        @log("init_stubs(): cb(): result:", result)
       for id, spec of result
         { name, method_names } = spec
         stub = new WS_RMI_Stub(id, name, method_names, this)
         @stubs[stub.name] = stub
 
     eh = (error) =>
-      if @log_level > 2
-        log("init_stub(): eh(): received error:", error)
-      return new Error("init_stub(): eh(): received error:")
+      if @log_level > -1
+        @log("init_stub(): eh(): received error:", error)
+      throw new Error("init_stub(): eh(): received error:")
 
+    if @log_level > -1
+      @log("init_stubs(): begin")
+
+    # @send_request() returns a promise
     @send_request('admin', 'get_stub_specs', []).then(cb).catch(eh)
 
 
@@ -200,26 +185,76 @@ class WS_RMI_Connection
 
   # JSON.stringify and send.  Returns a promise.
   send_message: (data_obj) =>
-    if @log_level > 2
-      log("send_message(): data_obj:", data_obj)
+
+    if @log_level > -1
+      @log("send_message(): data_obj:", data_obj)
+      @log("@ws.readyState = #{@ws.readyState}")
+
     try
-      @ws.send(JSON.stringify(data_obj))
+      # The WebSocket API seems flawed.  When a new ws is created
+      # as in 'new WebSocket(url)' it attempts to connect to the server
+      # at url.  Until then ws.readyState == ws.CONNECTING and any
+      # attempt to send a message will throw an error.  An 'open' event
+      # is emmitted when ws.readyState == ws.OPEN and you can set
+      # ws.onOpen to handle this event, but only AFTER the attempt to
+      # connect has already begun.  So there is a race condition between
+      # setting the handler and completing the connect protocol.
+      #
+      # The code below is intended to handle this.  It runs every time
+      # send_message() is called but is really only necessary in the
+      # beginning when the ws has just been created.
+      #
+
+      # If the ws is connected then proceed as normal.
+      #
+      if @ws.readyState == @ws.OPEN
+        @ws.send(JSON.stringify(data_obj))
+
+
+      # If not ready but we're still connecting, then check again
+      # every ${delay} ms.
+      #
+      else if @ws.readyState == @ws.CONNECTING
+        delay = 100
+        max_tries = 30
+        tries = 0
+        @waiter = setInterval(( =>
+          @log("waiting #{delay} ms...")
+          tries += 1
+          if @ws.readyState == @ws.OPEN || tries >= max_tries
+            clearInterval(@waiter)
+            @ws.send(JSON.stringify(data_obj))), delay)
+
+
+      # The other possible states are CLOSED and CLOSING.  Either
+      # of these is an error.
+      #
+      else
+        throw new Error('ws.readyState not OPEN or CONNECTING')
+
     catch error
-      log("Error: send_message(): data_obj:", data_obj)
-      new Error("send_message(): Error sending:\n #{inspect data_obj}")
+      @log("Error: send_message(): data_obj:", data_obj)
+      @log error
+
 
   # JSON.parse and handle as appropriate.
   recv_message: (data) =>
     data_obj = JSON.parse(data)
+
     if @log_level > 2
-      log("recv_message(): data_obj:", data_obj)
+      @log("recv_message(): data_obj:", data_obj)
+
     { type, msg } = data_obj
     if type == 'request'
       return @recv_request(msg)
+
     if type == 'response'
       return @recv_response(msg)
+
     else
-      new Error("recv_message(): invalid type #{type}")
+      throw new Error("recv_message(): invalid type #{type}")
+
+
 
   #--------------------------------------------------------------------
   # Methods to Send and Receive RMI Requests
@@ -230,7 +265,7 @@ class WS_RMI_Connection
 
     msg = { obj_id: obj_id, method: method, args: args }
     if @log_level > 0
-      log("send_request(): msg:", msg)
+      @log("send_request(): msg:", msg)
 
     new Promise (resolve, reject) =>
       try
@@ -248,7 +283,8 @@ class WS_RMI_Connection
   recv_request: (msg) =>
 
     if @log_level > 0
-      log("recv_request(): msg:", msg)
+      @log("recv_request(): msg:", msg)
+
     { obj_id, method, args, rmi_id } = msg
 
     # callback used below
@@ -272,19 +308,19 @@ class WS_RMI_Connection
   send_response : (rmi_id, result, error) =>
     msg = { rmi_id: rmi_id, result: result, error: error }
     if @log_level > 0
-      log("send_response(): msg:", msg)
+      @log("send_response(): msg:", msg)
     new Promise (resolve, reject) =>
       try
         @send_message(type: 'response', msg: msg)
       catch error
-        log("Error in send_response():", msg)
+        @log("Error in send_response():", msg)
         reject({rmi_id, result, error})
 
 
   # Method recv_resonse()
   recv_response : (response) =>
     if @log_level > 0
-      log("recv_response(): response:", response)
+      @log("recv_response(): response:", response)
     try
       { rmi_id, result, error } = response
       { request, resolve, reject } = @rmi_hash[rmi_id]
@@ -332,7 +368,8 @@ class WS_RMI_Object
       return new Error(msg)
 
     if @log_level > 1
-      log("invoke(): ", {method_name, args})
+      @log("invoke(): ", {method_name, args})
+
     # call the method of the underlying object
     @obj[method_name].apply(@obj, args) # .catch(eh)
 
@@ -355,7 +392,8 @@ class WS_RMI_Stub
   #
   invoke: (name, args) ->
     if @log_level > 1
-      log("invoke(): ", {name, args})
+      @log("invoke(): ", {name, args})
+
     eh = (err) =>
       msg = "\nWS_RMI_Stub:"
       msg += (id: @id, method: name, args: args).toString()

@@ -18,19 +18,23 @@ class WS_RMI_Server_Common
   # order to add desired WS_RMI_Objects at construction.
   #
   constructor: (@server, @options, @objects) ->
+    @log_level = @options.log_level || 2
+    @log = @options.log || console.log
+
+
     @id = "WS_RMI_Server-#{Math.random().toString()[2..]}"
     @connections = []
 
-    { @host, @port, @path, @protocol, @log_level } = @options
+    { @host, @port, @protocol } = @options
     @url = "#{@protocol}://#{@host}:#{@port}"
 
     @wss = new WebSocket.Server(server: @server)
     @wss.on('connection', (ws) =>
       try
-        console.log("trying new connection: #{ws}")
+        @log("trying new connection: #{ws}")
         conn = new WS_RMI_Connection(this, ws, @log_level)
         @connections.push(conn)
-        console.log("connection added: #{conn.id}")
+        @log("connection added: #{conn.id}")
       catch error
         msg = "\nWS_RMI_Server_Common: "
         msg += "\nError in connection event handler"
@@ -40,20 +44,22 @@ class WS_RMI_Server_Common
   start: =>
     try
       @server.listen(@port, @host)
-      console.log("server listening at url: #{@url}")
+      @log("server listening at url: #{@url}")
+
     catch error
-     console.log error
+     @log error
 
   # Stop the server.
   stop: =>
     @server.close()
-    console.log("server stopped.")
+    @log("server stopped.")
 
 
 # WS_RMI_Server is the insecure version and can be run without root
 # access since it does not require access to the SSL credentials
 #
 class WS_RMI_Server extends WS_RMI_Server_Common
+
   constructor: (options, objects) ->
     webserver = http.createServer(null)
     super(webserver, options, objects)
@@ -64,6 +70,7 @@ class WS_RMI_Server extends WS_RMI_Server_Common
 # access to SSL credentials for the site.
 #
 class WSS_RMI_Server extends WS_RMI_Server_Common
+
   constructor: (credentials, options, objects) ->
     webserver = https.createServer(null, credentials)
     super(webserver, options, objects)

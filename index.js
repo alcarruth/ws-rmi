@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // file: index.js
-// package: ws_rmi
+// package: ws-rmi
 
 lib = require('./lib/index')
 
