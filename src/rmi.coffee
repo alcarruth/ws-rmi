@@ -1,15 +1,15 @@
 #!/bin/env/ coffee
 #
-#  ws_rmi_connection
+#  rmi.coffee
 #
 
 #----------------------------------------------------------------------
 
-class WS_RMI_Connection
+class RMI_Connection
 
-  # WS_RMI_Connection is basically just a wrapper around a websocket
-  # and is intendend to be applied on both ends of the socket.  @owner
-  # is the ws_rmi_client or the ws_rmi_server which established this
+  # RMI_Connection is basically just a wrapper around a socket
+  # and is intendend to be applied on both ends of the websocket.  @owner
+  # is the rmi_client or the rmi_server which established this
   # end of the websocket.
   #
   # The idea here is that the connection, once established, is
@@ -17,20 +17,17 @@ class WS_RMI_Connection
   # method invocation and to respond to such requests.
   #
   # TODO: I have not settled the design as yet.  Previously the RMI's
-  # were requested by a WS_RMI_Client and responded to by a
-  # WS_RMI_Server.  My current thinking is that that functionality
+  # were requested by a RMI_Client and responded to by a
+  # RMI_Server.  My current thinking is that that functionality
   # might be better off here.
   #
   constructor: (@owner, @ws, options) ->
-    @log_level = options.log_level || 2
-    @log = options.log || console.log
+    @id = random_id('RMI_Connection')
+    @log_level = options?.log_level || 2
+    @log = options?.log || console.log
     @waiter = null
 
-    # TODO: Need a unique id here. Does this work ok?
-    # @id = "#{ws._socket.server._connectionKey}"
-    @id = "connection"
-
-    # WS_RMI_Objects are registered here with their id as key.  The
+    # RMI_Objects are registered here with their id as key.  The
     # registry is used by method recv_request() which receives just an
     # id in the message and must look up the object to invoke it's
     # method.
@@ -41,7 +38,7 @@ class WS_RMI_Connection
     # Pseudo-object 'admin' with method 'init'
     #
     # TODO: Is it better to use this pseudo-object approach or just
-    # instantiate WS_RMI_Object to the same effect?  The point is that
+    # instantiate RMI_Object to the same effect?  The point is that
     # 'admin' is special in that it is present at Connection creation
     # time.  It should be excluded from init() responses since the
     # caller already has it.  Should it then be excluded from the
@@ -56,9 +53,9 @@ class WS_RMI_Connection
     # considered.
     #
     @admin =
-      id: 'admin',
-      name: 'admin',
-      get_stub_specs: @get_stub_specs,
+      id: 'admin'
+      name: 'admin'
+      get_stub_specs: @get_stub_specs
       method_names: ['get_stub_specs']
 
     @registry['admin'] = @admin
@@ -80,10 +77,10 @@ class WS_RMI_Connection
       @add_object(obj)
 
     # Events are mapped to handler methods defined below.
-    @ws.onOpen = @onOpen
-    @ws.onmessage = @onMessage
-    @ws.onclose = @onClose
-    @ws.onerror = @onError
+    @ws.on('open', @on_Open)
+    @ws.on('message', @on_Message)
+    @ws.on('close', @on_Close)
+    @ws.on('error', @on_Error)
 
     true
 
@@ -98,26 +95,26 @@ class WS_RMI_Connection
   # to keep stale connection objects around and re-activate them when
   # connected again.
   #
-  onOpen: (evt) =>
+  on_Open: (evt) =>
     @log("connection opened: id:", @id)
     @init_stubs()
 
   # This is the "main event".  It's what we've all been waiting for!
-  onMessage: (evt) =>
-    if @log_level > 2
-      @log("onMessage:", evt.data)
-    @recv_message(evt.data)
+  on_Message: (data) =>
+    if @log_level > 0
+      @log("onMessage:", data)
+    @recv_message(data)
 
   # TODO: perhaps somebody should be notified here ?-)
   # Who wanted this connection in the first place?  Do we
   # have their contact info?
   #
-  onClose: (evt) =>
+  on_Close: (evt) =>
     if @log_level > 0
       @log("peer disconnected: id:", @id)
 
   # TODO: think of something to do here.
-  onError: (evt) =>
+  on_Error: (evt) =>
     @log(evt.data)
     if @waiter
       clearInterval(@waiter)
@@ -125,7 +122,7 @@ class WS_RMI_Connection
   #----------------------------------------------------------
   # Object registry methods
 
-  # Register a WS_RMI_Object for RMI
+  # Register a RMI_Object for RMI
   add_object: (obj) =>
     @registry[obj.id] = obj
     obj.register(this)
@@ -164,13 +161,13 @@ class WS_RMI_Connection
         @log("init_stubs(): cb(): result:", result)
       for id, spec of result
         { name, method_names } = spec
-        stub = new WS_RMI_Stub(id, name, method_names, this)
+        stub = new RMI_Stub(id, name, method_names, this)
         @stubs[stub.name] = stub
 
     eh = (error) =>
       if @log_level > -1
         @log("init_stub(): eh(): received error:", error)
-      throw new Error("init_stub(): eh(): received error:")
+     @log("init_stub(): eh(): received error:")
 
     if @log_level > -1
       @log("init_stubs(): begin")
@@ -241,7 +238,7 @@ class WS_RMI_Connection
   recv_message: (data) =>
     data_obj = JSON.parse(data)
 
-    if @log_level > 2
+    if @log_level > 0
       @log("recv_message(): data_obj:", data_obj)
 
     { type, msg } = data_obj
@@ -333,19 +330,21 @@ class WS_RMI_Connection
 
 
 #----------------------------------------------------------------------
-# WS_RMI_Object
+# RMI_Object
 
-# used in WS_RMI_Object constructor
+# used in RMI_Object constructor
 random_id = (name) ->
   "#{name}_#{Math.random().toString()[2..]}"
 
-# WS_RMI_Object wraps a regular coffeescript class instance object,
+# RMI_Object wraps a regular coffeescript class instance object,
 # exposing only those methods explicitly intended for RMI.
 #
-class WS_RMI_Object
+class RMI_Object
 
-  constructor: (@name, @obj, @method_names, log_level) ->
-    @log_level = log_level || 0
+  constructor: (@name, @obj, @method_names, options) ->
+    @options = options
+    @log_level = options?.log_level || 0
+    @log = options?.log || console.log
     @id = random_id(@name)
 
     for name in @method_names
@@ -363,7 +362,7 @@ class WS_RMI_Object
 
     # error handler used in .catch() just below.
     eh = (err) =>
-      msg = "\nWS_RMI_Object:"
+      msg = "\nRMI_Object:"
       msg += (id: @id, method: name, args: args).toString()
       return new Error(msg)
 
@@ -375,12 +374,13 @@ class WS_RMI_Object
 
 
 #-----------------------------------------------------------------------
-# WS_RMI_Stub
+# RMI_Stub
 
-class WS_RMI_Stub
+class RMI_Stub
 
-  constructor: (@id, @name, @method_names, @connection, log_level) ->
-    @log_level = log_level || 0
+  constructor: (@id, @name, @method_names, @connection, options) ->
+    @log_level = options?.log_level || 0
+    @log = options?.log || console.log
 
     for name in @method_names
       this[name] = ((name) =>
@@ -388,14 +388,14 @@ class WS_RMI_Stub
           @invoke(name, args))(name)
 
   # Method invoke() implements local stub methods by calling
-  # WS_RMI_Connection.send_request() which returns a Promise.
+  # RMI_Connection.send_request() which returns a Promise.
   #
   invoke: (name, args) ->
     if @log_level > 1
       @log("invoke(): ", {name, args})
 
     eh = (err) =>
-      msg = "\nWS_RMI_Stub:"
+      msg = "\nRMI_Stub:"
       msg += (id: @id, method: name, args: args).toString()
       return new Error(msg)
 
@@ -404,6 +404,6 @@ class WS_RMI_Stub
 
 #----------------------------------------------------------------------
 
-exports.WS_RMI_Connection = WS_RMI_Connection
-exports.WS_RMI_Object = WS_RMI_Object
-exports.WS_RMI_Stub = WS_RMI_Stub
+exports.RMI_Connection = RMI_Connection
+exports.RMI_Object = RMI_Object
+exports.RMI_Stub = RMI_Stub

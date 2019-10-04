@@ -3,11 +3,11 @@
 #  ws_rmi_server
 #
 
-WebSocket = require('ws')
+ws = require('ws')
 http = require('http')
 https = require('https')
 
-{ WS_RMI_Connection } = require('./app')
+{ RMI_Connection } = require('./rmi')
 
 # WS_RMI_Server_Common contains code common to both
 # WS_RMI_Server and WSS_RMI_Server defined below
@@ -17,22 +17,21 @@ class WS_RMI_Server_Common
   # Connection should extend WS_RMI_Connection in
   # order to add desired WS_RMI_Objects at construction.
   #
-  constructor: (@server, @options, @objects) ->
-    @log_level = @options.log_level || 2
-    @log = @options.log || console.log
-
-
+  constructor: (@server, @objects, @options) ->
     @id = "WS_RMI_Server-#{Math.random().toString()[2..]}"
+    @log_level = @options?.log_level || 2
+    @log = @options?.log || console.log
+    @host = @options?.host || 'localhost'
+    @port = @options?.port || 8086
+    @protocol = @options?.protocol || 'ws'
+    @url = "#{@protocol}://#{@host}:#{@port}"
     @connections = []
 
-    { @host, @port, @protocol } = @options
-    @url = "#{@protocol}://#{@host}:#{@port}"
-
-    @wss = new WebSocket.Server(server: @server)
+    @wss = new ws.Server(server: @server)
     @wss.on('connection', (ws) =>
       try
         @log("trying new connection: #{ws}")
-        conn = new WS_RMI_Connection(this, ws, @log_level)
+        conn = new RMI_Connection(this, ws, @log_level)
         @connections.push(conn)
         @log("connection added: #{conn.id}")
       catch error
@@ -47,7 +46,7 @@ class WS_RMI_Server_Common
       @log("server listening at url: #{@url}")
 
     catch error
-     @log error
+      @log error
 
   # Stop the server.
   stop: =>
@@ -60,9 +59,9 @@ class WS_RMI_Server_Common
 #
 class WS_RMI_Server extends WS_RMI_Server_Common
 
-  constructor: (options, objects) ->
+  constructor: (objects, options) ->
     webserver = http.createServer(null)
-    super(webserver, options, objects)
+    super(webserver, objects, options)
     @protocol = 'ws'
 
 
@@ -71,9 +70,9 @@ class WS_RMI_Server extends WS_RMI_Server_Common
 #
 class WSS_RMI_Server extends WS_RMI_Server_Common
 
-  constructor: (credentials, options, objects) ->
+  constructor: (credentials, objects, options) ->
     webserver = https.createServer(null, credentials)
-    super(webserver, options, objects)
+    super(webserver, objects, options)
     @protocol = 'wss'
 
 

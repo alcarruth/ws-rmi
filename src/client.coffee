@@ -5,8 +5,7 @@
 
 # works both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
-
-{ WS_RMI_Connection } = require('./app')
+{ RMI_Connection } = require('./rmi')
 
 
 class WS_RMI_Client
@@ -14,23 +13,27 @@ class WS_RMI_Client
   # Connnection should be a sub-class of WS_RMI_Connection in order to
   # create and register desired WS_RMI_Objects at construction.
   #
-  constructor: (@options, @objects, Connection) ->
+  constructor: (Connection, @objects, @options = {}) ->
     @log_level = @options.log_level || 2
     @log = @options.log || console.log
 
     { host, port, path, protocol } = @options
     @url = "#{protocol}://#{host}:#{port}/#{path}"
 
-    @Connection = Connection || WS_RMI_Connection
+    @Connection = Connection || RMI_Connection
     @id = "WS_RMI_Client-#{Math.random().toString()[2..]}"
 
 
   #--------------------------------------------------------------------
-  # connect() and disconnect() methods
+  # connect() method
   #
 
   connect: (url) =>
-    new Promise((resolve, reject) =>
+    @log("ws_rmi_client: id:", @id)
+    @log("ws connectiing ...")
+
+    new Promise (resolve, reject) =>
+
       try
         @url = url if url
 
@@ -41,21 +44,25 @@ class WS_RMI_Client
         # See note below ...
         #
         @ws = new WebSocket(@url)
-        @log("ws_rmi_client: id:", @id)
-        @log("ws connectiing ...")
 
-        # Note: @ws exists but is not necessarily ready yet.
-        # This issue is addressed in the WS_RMI_Connection.send_message()
+        # Note: @ws exists but is not necessarily ready yet.  This
+        # issue is addressed in the WS_RMI_Connection.send_message()
         # method (q.v.)
         #
-        connection = new @Connection(this, @ws, @options)
+        @connection = new @Connection(this, @ws, @options)
         resolve(connection)
 
       catch error
-        @log error
-        msg = "\nWS_RMI_Client: connect failed."
-        msg += " url: #{@url}"
-        throw new Error(msg))
+        msg = "\nWS_RMI_Client: connect failed.\n"
+        msg += error.toString() + '\n'
+        msg += error.stack.split('\n').filter((x)-> /ws-rmi/.test(x)).join('\n')
+        @log(msg)
+
+
+
+  #--------------------------------------------------------------------
+  # disconnect() method
+  #
 
   disconnect: =>
     if @log_level > 0
