@@ -23,8 +23,8 @@ class RMI_Connection
   #
   constructor: (@owner, @ws, options) ->
     @id = random_id('RMI_Connection')
-    @log_level = options?.log_level || 2
     @log = options?.log || console.log
+    @log_level = options?.log_level || 2
     @waiter = null
 
     # RMI_Objects are registered here with their id as key.  The
@@ -101,8 +101,8 @@ class RMI_Connection
 
   # This is the "main event".  It's what we've all been waiting for!
   on_Message: (data) =>
-    if @log_level > 0
-      @log("onMessage:", data)
+    if @log_level > 2
+      @log("RMI_Connection.on_Message(): ", data)
     @recv_message(data)
 
   # TODO: perhaps somebody should be notified here ?-)
@@ -236,12 +236,20 @@ class RMI_Connection
 
   # JSON.parse and handle as appropriate.
   recv_message: (data) =>
-    data_obj = JSON.parse(data)
 
     if @log_level > 0
-      @log("recv_message(): data_obj:", data_obj)
+      @log("RMI_Connection.recv_message() ")
+      @log("data: #{data}")
 
-    { type, msg } = data_obj
+    data_obj = JSON.parse(data)
+    @data_obj = data_obj
+    type = data_obj.type
+    msg = data_obj.msg
+    if @log_level > 0
+      @log("data_obj: #{data_obj}")
+      @log("type: #{type}")
+      @log("msg: #{msg}")
+
     if type == 'request'
       return @recv_request(msg)
 
@@ -279,7 +287,7 @@ class RMI_Connection
   # Method recv_request()
   recv_request: (msg) =>
 
-    if @log_level > 0
+    if @log_level > -1
       @log("recv_request(): msg:", msg)
 
     { obj_id, method, args, rmi_id } = msg

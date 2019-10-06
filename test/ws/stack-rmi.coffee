@@ -1,11 +1,10 @@
 #!/usr/bin/env coffee
 #
-#  ws-stack-rmi.coffee
+#  ws/stack-rmi.coffee
 #
 
-{ Stack } = require('./stack.coffee')
-ws_rmi_socket = require('../src')
-rmi = require('../src')
+{ Stack } = require('../stack')
+rmi = require('../../src')
 
 
 class Stack_RMI_Object extends rmi.Object
@@ -14,12 +13,12 @@ class Stack_RMI_Object extends rmi.Object
     method_names = ['push', 'pop']
     super('stack', stack, method_names, options)
 
-class Stack_RMI_Client extends ws_rmi_socket.Client
+class Stack_RMI_Client extends rmi.WS_Client
   constructor: (options = {}) ->
     objects = []
     super(rmi.Connection, objects, options)
 
-class Stack_RMI_Server extends ws_rmi_socket.Server
+class Stack_RMI_Server extends rmi.WS_Server
   constructor: (options = {}) ->
     stack_rmi_obj = new Stack_RMI_Object(options)
     super([stack_rmi_obj], options)

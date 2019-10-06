@@ -7,7 +7,7 @@ ws = require('ws')
 http = require('http')
 https = require('https')
 
-{ RMI_Connection } = require('./rmi')
+{ RMI_Connection } = require('../rmi')
 
 # WS_RMI_Server_Common contains code common to both
 # WS_RMI_Server and WSS_RMI_Server defined below

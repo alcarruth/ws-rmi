@@ -13,18 +13,19 @@ ipc_options =
 local_options =
   host: 'localhost'
   port: 8087
-  path: ''
   protocol: 'ws'
+  path: ''
   log_level: 2
   log: log
 
 remote_options =
   host: 'alcarruth.net'
   port: 443
-  path: '/wss/tickets_coffee'
   protocol: 'wss'
+  path: '/wss/tickets_coffee'
   log_level: 2
   log: console.log
 
 exports.local_options = local_options
 exports.remote_options = remote_options
+exports.ipc_options = ipc_options

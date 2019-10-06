@@ -5,7 +5,7 @@
 
 # works both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
-{ RMI_Connection } = require('./rmi')
+{ RMI_Connection } = require('../rmi')
 
 
 class WS_RMI_Client
@@ -50,7 +50,7 @@ class WS_RMI_Client
         # method (q.v.)
         #
         @connection = new @Connection(this, @ws, @options)
-        resolve(connection)
+        resolve(@connection)
 
       catch error
         msg = "\nWS_RMI_Client: connect failed.\n"
