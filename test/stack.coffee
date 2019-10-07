@@ -12,6 +12,7 @@ class Stack
     new Promise (resolve, reject) =>
       try
         resolve(@stack.push(x))
+        console.log @stack
       catch error
         reject(error)
 
@@ -19,6 +20,7 @@ class Stack
     new Promise (resolve, reject) =>
       try
         resolve(@stack.pop())
+        console.log @stack
       catch error
         reject(error)
 

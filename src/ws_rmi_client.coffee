@@ -5,7 +5,8 @@
 
 # works both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
-{ RMI_Connection } = require('../rmi')
+
+RMI_Connection = require('./rmi').Connection
 
 
 class WS_RMI_Client
@@ -13,15 +14,23 @@ class WS_RMI_Client
   # Connnection should be a sub-class of WS_RMI_Connection in order to
   # create and register desired WS_RMI_Objects at construction.
   #
-  constructor: (Connection, @objects, @options = {}) ->
-    @log_level = @options.log_level || 2
-    @log = @options.log || console.log
-
-    { host, port, path, protocol } = @options
-    @url = "#{protocol}://#{host}:#{port}/#{path}"
-
-    @Connection = Connection || RMI_Connection
+  constructor: (@objects, @options = {}, Connection) ->
     @id = "WS_RMI_Client-#{Math.random().toString()[2..]}"
+    @log_level = @options?.log_level || 2
+    @log = @options?.log || console.log
+
+    @protocol = @options?.protocol || 'ws+unix'
+    if @protocol == 'ws+unix'
+      @path = @options?.path || '/tmp/ipc_rmi'
+      @url = "ws+unix://#{@path}"
+    else
+      @host = @options?.host || localhost
+      @port = @options?.port || 8007
+      @path = @options?.path || ''
+      @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
+
+    @connection = null
+    @Connection = Connection || RMI_Connection
 
 
   #--------------------------------------------------------------------
@@ -29,8 +38,7 @@ class WS_RMI_Client
   #
 
   connect: (url) =>
-    @log("ws_rmi_client: id:", @id)
-    @log("ws connectiing ...")
+    @log("RMI_Client.connect(): id:", @id)
 
     new Promise (resolve, reject) =>
 
@@ -70,4 +78,4 @@ class WS_RMI_Client
     @ws.close()
 
 
-exports.WS_RMI_Client = WS_RMI_Client
+module.exports = WS_RMI_Client

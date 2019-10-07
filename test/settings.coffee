@@ -6,24 +6,26 @@
 { log } = require('logger')
 
 ipc_options =
-  path: ''
-  log_level: 2
+  port: null
+  host: null
+  path: '/tmp/stack-rmi'
+  log_level: 1
   log: log
 
 local_options =
-  host: 'localhost'
-  port: 8087
   protocol: 'ws'
+  port: 8087
   path: ''
-  log_level: 2
+  host: 'localhost'
+  log_level: 1
   log: log
 
 remote_options =
-  host: 'alcarruth.net'
-  port: 443
   protocol: 'wss'
+  port: 443
+  host: 'alcarruth.net'
   path: '/wss/tickets_coffee'
-  log_level: 2
+  log_level: 1
   log: console.log
 
 exports.local_options = local_options
