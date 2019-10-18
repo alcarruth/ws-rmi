@@ -73,14 +73,30 @@ class WS_RMI_Connection
     @rmi_hash = {}
 
     # add remote objects
+    @log("@owner.objects: #{@owner.objects}")
+
     for obj in @owner.objects
       @add_object(obj)
 
     # Events are mapped to handler methods defined below.
-    @ws.on('open', @on_Open)
-    @ws.on('message', @on_Message)
-    @ws.on('close', @on_Close)
-    @ws.on('error', @on_Error)
+    #
+    # TODO: the chrome WebSocket class has no 'on' method, but the
+    # 'ws' library does.  Need to simplify.
+    #
+    if @ws.on
+      @ws.on('open', @on_Open)
+      @ws.on('message', @on_Message)
+      @ws.on('close', @on_Close)
+      @ws.on('error', @on_Error)
+    else
+      # TODO: these might work for the 'ws' websocket library
+      # also.  If so, we can lose the above case and just use the
+      # following else part.  Try it in ipc mode.
+      #
+      @ws.onopen = (e) => @on_Open(e.data)
+      @ws.onmessage = (e) => @on_Message(e.data)
+      @ws.onclose = (e) => @on_Close(e.data)
+      @ws.onerror = (e) => @on_Error(e.data)
 
     true
 
