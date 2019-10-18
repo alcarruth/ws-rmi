@@ -110,7 +110,7 @@ class WS_RMI_Server
   cleanup: =>
     if fs.existsSync(@path)
       console.log("deleting #{@path}")
-      fs.unlink_sync(@path))
+      fs.unlink_sync(@path)
 
 
   # Method stop()
