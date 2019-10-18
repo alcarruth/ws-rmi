@@ -9,5 +9,5 @@ function clean {
 }
 
 function build {
-  coffee -c -o ./lib ./src/*.coffee
+  coffee -c -o ./lib ./src/*.coffee > /dev/null
 }
