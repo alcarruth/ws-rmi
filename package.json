@@ -4,6 +4,7 @@
   "description": "Remote method invocation over websockets.",
   "main": "index.js",
   "scripts": {
+    "install": "./bin/build.sh",
     "clean": "./bin/clean.sh",
     "build": "./bin/build.sh"
   },
