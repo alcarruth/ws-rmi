@@ -2,6 +2,6 @@
 
 source ./bin/defs.sh;
 
-echo "building ws-rmi/lib"
 clean;
 build;
+build_examples;
