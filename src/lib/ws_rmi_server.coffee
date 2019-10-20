@@ -3,6 +3,7 @@
 #  ws_rmi_server
 #
 
+process = require('process')
 fs = require('fs')
 ws = require('ws')
 http = require('http')
@@ -42,14 +43,25 @@ class WS_RMI_Server
       @path = @options?.path || '/tmp/ipc_rmi'
       @url = "ws+unix://#{@path}"
 
-      # TODO: this is suppose to do cleanup.
-      # It doesn't work.
-      #
-      process.on('exit', @cleanup)
-      process.on('SIGQUIT', @cleanup)
-      process.on('SIGINT', @cleanup)
-      process.on('SIGKILL', @cleanup)
-      @server.on('close', @cleanup)
+      # Catch 'exit' (Ctrl-D)
+      process.on('exit', =>
+        #console.log("received 'exit' (Ctrl-D)")
+        #@stop()
+        )
+
+      # Catch 'SIGQUIT'
+      process.on('SIGQUIT', =>
+         console.log("received 'SIGQUIT'"))
+
+      # Catch 'SIGINT' (Ctrl-C)
+      process.on('SIGINT', =>
+        console.log("\nreceived 'SIGINT' (Ctrl-C)")
+        @stop()
+        process.exit()
+        )
+      #  if fs.existsSync(@path)
+      #    fs.unlinkSync(@path)
+      #    process.exit())
 
     # Otherwise we need the usual TCP options.
     else
@@ -109,8 +121,8 @@ class WS_RMI_Server
 
   cleanup: =>
     if fs.existsSync(@path)
-      console.log("deleting #{@path}")
-      fs.unlink_sync(@path)
+      fs.unlinkSync(@path)
+      process.exit()
 
 
   # Method stop()

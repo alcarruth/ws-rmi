@@ -4,7 +4,7 @@
 #
 
 { Stack } = require('./stack')
-ws_rmi = require('../src')
+ws_rmi = require('../../lib')
 
 
 class Stack_RMI_Object extends ws_rmi.Object

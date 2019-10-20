@@ -1,6 +1,9 @@
 *~
 tmp
 lib/*.js
+examples/stack/*.js
+examples/stack/ipc/*.js
+examples/stack/tcp/*.js
 
 # Logs
 logs

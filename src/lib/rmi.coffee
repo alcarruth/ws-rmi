@@ -189,8 +189,8 @@ class WS_RMI_Connection
 
     eh = (error) =>
       if @log_level > 1
-        @log("init_stub(): eh(): received error:", error)
-     @log("init_stub(): eh(): received error:")
+        @log("init_stubs(): eh(): received error:", error)
+      @log("init_stubs(): eh(): received error:", error)
 
     if @log_level > 1
       @log("init_stubs(): begin")
