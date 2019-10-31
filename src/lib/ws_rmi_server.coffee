@@ -32,8 +32,6 @@ class WS_RMI_Server
     @log_level = @options?.log_level || 2
     @log = @options?.log || console.log
 
-    @log("options: #{@options}")
-
     # The connection class - defaults to RMI_Connection
     @Connection = Connection || RMI_Connection
 
@@ -114,15 +112,13 @@ class WS_RMI_Server
         stats = fs.statSync(@path)
         uid = @options.uid || stats.uid
         gid = @options.gid || stats.gid
-        @log("uid: #{uid}")
-        @log("gid: #{gid}")
         fs.chownSync(@path, uid, gid)
 
       # otherwise start with TCP options
       else
         @server.listen(host: @host, port: @port)
 
-      @log("server listening at ", @url)
+      @log("server listening at #{@url}")
 
     catch error
       @log error
