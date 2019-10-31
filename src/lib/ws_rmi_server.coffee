@@ -32,6 +32,14 @@ class WS_RMI_Server
     @log_level = @options?.log_level || 2
     @log = @options?.log || console.log
 
+    @log("options: #{@options}")
+
+    # The connection class - defaults to RMI_Connection
+    @Connection = Connection || RMI_Connection
+
+    # connections added here as they are created
+    @connections = []
+
     # default to 'ws+unix'
     @protocol = @options?.protocol || 'ws+unix'
 
@@ -70,12 +78,6 @@ class WS_RMI_Server
       @path = @options?.path || ''
       @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
 
-    # connections added here as they are created
-    @connections = []
-
-    # The connection class - defaults to RMI_Connection
-    @Connection = Connection || RMI_Connection
-
     # wss means secure websocket so we'll use https
     if @protocol == 'wss'
       @server = new https.Server(null, @options.credentials)
@@ -109,6 +111,12 @@ class WS_RMI_Server
       # Unix domain socket so just use @path
       if @protocol == 'ws+unix'
         @server.listen(path: @path)
+        stats = fs.statSync(@path)
+        uid = @options.uid || stats.uid
+        gid = @options.gid || stats.gid
+        @log("uid: #{uid}")
+        @log("gid: #{gid}")
+        fs.chownSync(@path, uid, gid)
 
       # otherwise start with TCP options
       else

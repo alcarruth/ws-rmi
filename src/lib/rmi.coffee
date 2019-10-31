@@ -7,19 +7,19 @@
 
 class WS_RMI_Connection
 
-  # RMI_Connection is basically just a wrapper around a socket
-  # and is intendend to be applied on both ends of the websocket.  @owner
-  # is the rmi_client or the rmi_server which established this
-  # end of the websocket.
+  # RMI_Connection is basically just a wrapper around a socket and is
+  # intendend to be applied on both ends of the websocket.  @owner is
+  # the rmi_client or the rmi_server which established this end of the
+  # websocket.
   #
   # The idea here is that the connection, once established, is
   # symmetrical with both ends having the ability to request a remote
   # method invocation and to respond to such requests.
   #
   # TODO: I have not settled the design as yet.  Previously the RMI's
-  # were requested by a RMI_Client and responded to by a
-  # RMI_Server.  My current thinking is that that functionality
-  # might be better off here.
+  # were requested by a RMI_Client and responded to by a RMI_Server.
+  # My current thinking is that that functionality might be better off
+  # here.
   #
   constructor: (@owner, @ws, options) ->
     @id = random_id('WS_RMI_Connection')
@@ -74,7 +74,6 @@ class WS_RMI_Connection
 
     # add remote objects
     @log("@owner.objects: #{@owner.objects}")
-
     for obj in @owner.objects
       @add_object(obj)
 
@@ -89,9 +88,9 @@ class WS_RMI_Connection
       @ws.on('close', @on_Close)
       @ws.on('error', @on_Error)
     else
-      # TODO: these might work for the 'ws' websocket library
-      # also.  If so, we can lose the above case and just use the
-      # following else part.  Try it in ipc mode.
+      # TODO: these might work for the 'ws' websocket library also.
+      # If so, we can lose the above case and just use the following
+      # else part.  Try it in ipc mode.
       #
       @ws.onopen = (e) => @on_Open(e.data)
       @ws.onmessage = (e) => @on_Message(e.data)
@@ -121,9 +120,8 @@ class WS_RMI_Connection
       @log("WS_RMI_Connection.on_Message(): ", data)
     @recv_message(data)
 
-  # TODO: perhaps somebody should be notified here ?-)
-  # Who wanted this connection in the first place?  Do we
-  # have their contact info?
+  # TODO: perhaps somebody should be notified here ?-) Who wanted this
+  # connection in the first place?  Do we have their contact info?
   #
   on_Close: (evt) =>
     if @log_level > 1
@@ -157,7 +155,10 @@ class WS_RMI_Connection
   del_object: (id) =>
     delete @registry[id]
 
-  # Method get_stub_specs() is a built-in remote method.
+  # Method get_stub_specs() is a server side built-in remote method.
+  # It is invoked by method invoke_stubs() on the client side. (see
+  # below)
+  #
   get_stub_specs: =>
 
     new Promise((resolve, reject) =>
@@ -176,9 +177,12 @@ class WS_RMI_Connection
         @log("Error: init():", specs, error)
         reject("Error: init():", specs))
 
-  # Invoke remote get_stub_specs()
+  # Call get_stub_specs() on the server side, then build the local
+  # stubs for the remote objects' methods.
+  #
   init_stubs: =>
 
+    # callback
     cb = (result) =>
       if @log_level > 1
         @log("init_stubs(): cb(): result:", result)
@@ -187,6 +191,7 @@ class WS_RMI_Connection
         stub = new WS_RMI_Stub(id, name, method_names, this)
         @stubs[stub.name] = stub
 
+    # error handler
     eh = (error) =>
       if @log_level > 1
         @log("init_stubs(): eh(): received error:", error)
@@ -211,14 +216,15 @@ class WS_RMI_Connection
       @log("@ws.readyState = #{@ws.readyState}")
 
     try
-      # The WebSocket API seems flawed.  When a new ws is created
-      # as in 'new WebSocket(url)' it attempts to connect to the server
+      # The WebSocket API seems flawed.  When a new ws is created as
+      # in 'new WebSocket(url)' it attempts to connect to the server
       # at url.  Until then ws.readyState == ws.CONNECTING and any
-      # attempt to send a message will throw an error.  An 'open' event
-      # is emmitted when ws.readyState == ws.OPEN and you can set
-      # ws.onOpen to handle this event, but only AFTER the attempt to
-      # connect has already begun.  So there is a race condition between
-      # setting the handler and completing the connect protocol.
+      # attempt to send a message will throw an error.  An 'open'
+      # event is emmitted when ws.readyState == ws.OPEN and you can
+      # set ws.onOpen to handle this event, but only AFTER the attempt
+      # to connect has already begun.  So there is a race condition
+      # between setting the handler and completing the connect
+      # protocol.
       #
       # The code below is intended to handle this.  It runs every time
       # send_message() is called but is really only necessary in the
@@ -318,8 +324,8 @@ class WS_RMI_Connection
     # error handler used below
     eh = (err) => @send_response(rmi_id, null, err)
 
-    # Look up the object and apply the method to the args.
-    # Method is assumed to return a promise.
+    # Look up the object and apply the method to the args.  Method is
+    # assumed to return a promise.
     #
     obj = @registry[obj_id]
     obj[method].apply(obj, args).then(cb).catch(eh)
@@ -385,8 +391,8 @@ class WS_RMI_Object
   register: (connection) =>
     @connection = connection
 
-  # Method invoke() is called by connection.recv_request()
-  # it executes the appropriate method and returns a promise.
+  # Method invoke() is called by connection.recv_request() it executes
+  # the appropriate method and returns a promise.
   #
   invoke: (method_name, args) ->
 
