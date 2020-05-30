@@ -73,7 +73,7 @@ class WS_RMI_Connection
     @rmi_hash = {}
 
     # add remote objects
-    @log("@owner.objects: #{@owner.objects}")
+    #@log("@owner.objects: #{@owner.objects}")
     for obj in @owner.objects
       @add_object(obj)
 
@@ -111,7 +111,7 @@ class WS_RMI_Connection
   # connected again.
   #
   on_Open: (evt) =>
-    @log("connection opened: id:", @id)
+    # @log("connection opened: id:", @id)
     @init_stubs()
 
   # This is the "main event".  It's what we've all been waiting for!
@@ -193,8 +193,6 @@ class WS_RMI_Connection
 
     # error handler
     eh = (error) =>
-      if @log_level > 1
-        @log("init_stubs(): eh(): received error:", error)
       @log("init_stubs(): eh(): received error:", error)
 
     if @log_level > 1
