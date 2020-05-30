@@ -21,10 +21,10 @@ class WS_RMI_Connection
   # My current thinking is that that functionality might be better off
   # here.
   #
-  constructor: (@owner, @ws, options) ->
+  constructor: (@owner, @ws, @options) ->
     @id = random_id('WS_RMI_Connection')
-    @log = options?.log || console.log
-    @log_level = options?.log_level || 2
+    @log = @options?.log || console.log
+    @log_level = @options?.log_level || 0
     @waiter = null
 
     # WS_RMI_Objects are registered here with their id as key.  The
@@ -375,10 +375,9 @@ random_id = (name) ->
 #
 class WS_RMI_Object
 
-  constructor: (@name, @obj, @method_names, options) ->
-    @options = options
-    @log_level = options?.log_level || 0
-    @log = options?.log || console.log
+  constructor: (@name, @obj, @method_names, @options) ->
+    @log_level = @options?.log_level || 0
+    @log = @options?.log || console.log
     @id = random_id(@name)
 
     for name in @method_names
@@ -412,9 +411,9 @@ class WS_RMI_Object
 
 class WS_RMI_Stub
 
-  constructor: (@id, @name, @method_names, @connection, options) ->
-    @log_level = options?.log_level || 0
-    @log = options?.log || console.log
+  constructor: (@id, @name, @method_names, @connection, @options) ->
+    @log_level = @options?.log_level || 0
+    @log = @options?.log || console.log
 
     for name in @method_names
       this[name] = ((name) =>
