@@ -112,7 +112,8 @@ class WS_RMI_Connection
   #
   on_Open: (evt) =>
     # @log("connection opened: id:", @id)
-    @init_stubs()
+    await @init_stubs()
+    @init() if @init?
 
   # This is the "main event".  It's what we've all been waiting for!
   on_Message: (data) =>
