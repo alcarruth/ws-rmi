@@ -1,4 +1,4 @@
-#!/bin/env/ coffee
+
 #
 # ws_rmi_client
 #

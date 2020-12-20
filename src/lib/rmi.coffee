@@ -24,7 +24,7 @@ class WS_RMI_Connection
   constructor: (@owner, @ws, @options) ->
     @id = random_id('WS_RMI_Connection')
     @log = @options?.log || console.log
-    @log_level = @options?.log_level || 0
+    @log_level = @options?.log_level || 1
     @waiter = null
 
     # WS_RMI_Objects are registered here with their id as key.  The
@@ -79,23 +79,10 @@ class WS_RMI_Connection
 
     # Events are mapped to handler methods defined below.
     #
-    # TODO: the chrome WebSocket class has no 'on' method, but the
-    # 'ws' library does.  Need to simplify.
-    #
-    if @ws.on
-      @ws.on('open', @on_Open)
-      @ws.on('message', @on_Message)
-      @ws.on('close', @on_Close)
-      @ws.on('error', @on_Error)
-    else
-      # TODO: these might work for the 'ws' websocket library also.
-      # If so, we can lose the above case and just use the following
-      # else part.  Try it in ipc mode.
-      #
-      @ws.onopen = (e) => @on_Open(e.data)
-      @ws.onmessage = (e) => @on_Message(e.data)
-      @ws.onclose = (e) => @on_Close(e.data)
-      @ws.onerror = (e) => @on_Error(e.data)
+    @ws.onopen = @on_Open
+    @ws.onmessage = @on_Message
+    @ws.onclose = @on_Close
+    @ws.onerror = @on_Error
 
     true
 
@@ -116,16 +103,16 @@ class WS_RMI_Connection
     @init() if @init?
 
   # This is the "main event".  It's what we've all been waiting for!
-  on_Message: (data) =>
+  on_Message: (evt) =>
     if @log_level > 1
-      @log("WS_RMI_Connection.on_Message(): ", data)
-    @recv_message(data)
+      @log("WS_RMI_Connection.on_Message(): ", evt.data)
+    @recv_message(evt.data)
 
   # TODO: perhaps somebody should be notified here ?-) Who wanted this
   # connection in the first place?  Do we have their contact info?
   #
   on_Close: (evt) =>
-    if @log_level > 1
+    if @log_level > 0
       @log("peer disconnected: id:", @id)
 
   # TODO: think of something to do here.
@@ -147,10 +134,10 @@ class WS_RMI_Connection
   # Register a WS_RMI_Object for RMI
   add_object: (obj) =>
     @registry[obj.id] = obj
-    obj.register(this)
+    obj.set_connection(this)
 
-  register: (obj) =>
-    @registry[obj.id] = obj
+  #register: (obj) =>
+  #  @registry[obj.id] = obj
 
   # I refuse to comment on what this one does.
   del_object: (id) =>
@@ -267,7 +254,7 @@ class WS_RMI_Connection
 
     if @log_level > 1
       @log("WS_RMI_Connection.recv_message() ")
-      @log("data: #{data}")
+      @log("data: ", data)
 
     { type, msg } = JSON.parse(data)
 
@@ -386,8 +373,8 @@ class WS_RMI_Object
         (args...) ->
           @invoke(name, args))(name)
 
-  register: (connection) =>
-    @connection = connection
+  set_connection: (conn) =>
+    @connection = conn
 
   # Method invoke() is called by connection.recv_request() it executes
   # the appropriate method and returns a promise.
