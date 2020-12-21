@@ -31,6 +31,7 @@
   "homepage": "https://github.com/alcarruth/ws-rmi#readme",
   "devDependencies": {},
   "dependencies": {
+    "browserify": "^17.0.0",
     "coffeescript": "^2.3.2",
     "http": "0.0.0",
     "https": "^1.0.0",
