@@ -51,17 +51,17 @@ class WS_RMI_Server
 
       # Catch 'exit' (Ctrl-D)
       process.on('exit', =>
-        #console.log("received 'exit' (Ctrl-D)")
+        @log("WS_RMI_Server: received 'exit' (Ctrl-D)")
         #@stop()
         )
 
       # Catch 'SIGQUIT'
       process.on('SIGQUIT', =>
-         console.log("received 'SIGQUIT'"))
+        @log("WS_RMI_Server: received 'SIGQUIT'"))
 
       # Catch 'SIGINT' (Ctrl-C)
       process.on('SIGINT', =>
-        console.log("\nreceived 'SIGINT' (Ctrl-C)")
+        @log("WS_RMI_Server: received 'SIGINT' (Ctrl-C)")
         @stop()
         process.exit()
         )
@@ -90,10 +90,10 @@ class WS_RMI_Server
     @wss = new ws.Server(server: @server)
     @wss.on('connection', (ws) =>
       try
-        @log("trying new connection: #{ws}")
+        @log("WS_RMI_Server: trying new connection: ", ws: ws)
         conn = new @Connection(this, ws, @options)
         @connections.push(conn)
-        @log("connection added: #{conn.id}")
+        @log("connection added:", 'conn.id': conn.id)
       catch error
         msg = "\nWS_RMI_Server_Common: "
         msg += "\nError in connection event handler"
@@ -118,7 +118,7 @@ class WS_RMI_Server
       else
         @server.listen(host: @host, port: @port)
 
-      @log("server listening at #{@url}")
+      @log("WS_RMI_Server started.", url: @url)
 
     catch error
       @log error

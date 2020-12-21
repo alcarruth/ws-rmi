@@ -98,7 +98,7 @@ class WS_RMI_Connection
   # connected again.
   #
   on_Open: (evt) =>
-    # @log("connection opened: id:", @id)
+    # @log("connection opened: ", id: @id)
     await @init_stubs()
     @init() if @init?
 
@@ -113,7 +113,7 @@ class WS_RMI_Connection
   #
   on_Close: (evt) =>
     if @log_level > 0
-      @log("peer disconnected: id:", @id)
+      @log("peer disconnected: ", id: @id)
 
   # TODO: think of something to do here.
   on_Error: (evt) =>
@@ -173,7 +173,7 @@ class WS_RMI_Connection
     # callback
     cb = (result) =>
       if @log_level > 1
-        @log("init_stubs(): cb(): result:", result)
+        @log("init_stubs(): cb(): ", result: result)
       for id, spec of result
         { name, method_names } = spec
         stub = new WS_RMI_Stub(id, name, method_names, this)
@@ -198,8 +198,9 @@ class WS_RMI_Connection
   send_message: (data_obj) =>
 
     if @log_level > 1
-      @log("send_message(): data_obj:", data_obj)
-      @log("@ws.readyState = #{@ws.readyState}")
+      @log("send_message(): ",
+        data_obj: data_obj,
+        '@ws.readyState': @ws.readyState)
 
     try
       # The WebSocket API seems flawed.  When a new ws is created as
@@ -245,22 +246,22 @@ class WS_RMI_Connection
         throw new Error('ws.readyState not OPEN or CONNECTING')
 
     catch error
-      @log("Error: send_message(): data_obj:", data_obj)
-      @log error
+      @log("Error: send_message(): ",
+        data_obj: data_obj,
+        error: error)
 
 
   # JSON.parse and handle as appropriate.
   recv_message: (data) =>
 
     if @log_level > 1
-      @log("WS_RMI_Connection.recv_message() ")
-      @log("data: ", data)
+      @log("WS_RMI_Connection.recv_message() ",
+        data: data)
 
     { type, msg } = JSON.parse(data)
 
     if @log_level > 1
-      @log("type: #{type}")
-      @log("msg: #{msg}")
+      @log(type: type, msg: msg)
 
     if type == 'request'
       return @recv_request(msg)
@@ -282,7 +283,7 @@ class WS_RMI_Connection
 
     msg = { obj_id: obj_id, method: method, args: args }
     if @log_level > 1
-      @log("send_request(): msg:", msg)
+      @log("send_request(): ", msg: msg)
 
     new Promise (resolve, reject) =>
       try
@@ -300,7 +301,7 @@ class WS_RMI_Connection
   recv_request: (msg) =>
 
     if @log_level > 1
-      @log("recv_request(): msg:", msg)
+      @log("recv_request(): ", msg: msg)
 
     { obj_id, method, args, rmi_id } = msg
 
@@ -326,20 +327,20 @@ class WS_RMI_Connection
     msg = { rmi_id: rmi_id, result: result, error: error }
 
     if @log_level > 1
-      @log("send_response(): msg:", msg)
+      @log("send_response(): ", msg: msg)
 
     new Promise (resolve, reject) =>
       try
         @send_message(type: 'response', msg: msg)
       catch error
-        @log("Error in send_response():", msg)
+        @log("Error in send_response():", msg: msg)
         reject({rmi_id, result, error})
 
 
   # Method recv_resonse()
   recv_response : (response) =>
     if @log_level > 1
-      @log("recv_response(): response:", response)
+      @log("recv_response(): ", response: response)
     try
       { rmi_id, result, error } = response
       { request, resolve, reject } = @rmi_hash[rmi_id]
@@ -364,7 +365,7 @@ random_id = (name) ->
 class WS_RMI_Object
 
   constructor: (@name, @obj, @method_names, @options) ->
-    @log_level = @options?.log_level || 0
+    @log_level = @options?.log_level || 1
     @log = @options?.log || console.log
     @id = random_id(@name)
 

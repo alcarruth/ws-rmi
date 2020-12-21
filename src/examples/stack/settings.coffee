@@ -3,14 +3,26 @@
 #  settings.coffee
 #
 
-{ log } = require('logger')
+util = require('util')
+
+log_options =
+  colors: true
+  depth: null
+
+log = (xs...) ->
+  console.log("\n")
+  for x in xs
+    if typeof(x) == 'string'
+      console.log(x)
+    else
+      console.log(util.inspect(x, log_options))
 
 ipc_options =
   protocol: 'ws+unix'
   port: null
   host: null
   path: '/tmp/stack-rmi'
-  log_level: 1
+  log_level: 2
   log: log
 
 local_options =

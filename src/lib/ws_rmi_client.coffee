@@ -38,7 +38,7 @@ class WS_RMI_Client
   #
 
   connect: (url) =>
-    @log("RMI_Client.connect(): id:", @id)
+    @log("RMI_Client.connect():", id: @id)
 
     new Promise (resolve, reject) =>
 
@@ -74,7 +74,7 @@ class WS_RMI_Client
 
   disconnect: =>
     if @log_level > 0
-      @log("disconnecting: id: ", @id)
+      @log("disconnecting:", id: @id)
     @ws.close()
 
 
