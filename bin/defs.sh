@@ -26,7 +26,10 @@ function build_examples {
   coffee -c -o ./examples/stack/ ./src/examples/stack/*.coffee
   coffee -c -o ./examples/stack/ipc/ ./src/examples/stack/ipc/*.coffee
   coffee -c -o ./examples/stack/tcp/ ./src/examples/stack/tcp/*.coffee
-  cp ./src/index.html ./examples/browser
-  cp ./src/css/* ./examples/css
-  cp ./lib/ws_rmi_client.js ./lib/rmi.js ./examples/js
-  cp ./examples/stack/settings.js ./examples/js
+  coffee -c -o ./examples/stack/web/ ./src/examples/stack/web/*.coffee
+  cp ./src/html/examples.html ./examples/browser/index.html
+
+  cp ./src/css/* ./examples/browser/css
+  cp ./lib/ws_rmi_client.js ./lib/rmi.js ./examples/browser/js
+  cp ./examples/stack/settings.js ./examples/browser/js
+}
