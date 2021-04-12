@@ -38,6 +38,6 @@ function build_browser {
 
 function build {
   build_lib
-  build_examples
-  build_browser
+  #build_examples
+  #build_browser
 }
