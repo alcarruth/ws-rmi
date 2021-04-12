@@ -4,7 +4,7 @@
 
   //  settings.coffee
 
-  var ipc_options, local_options, log, log_options, remote_options, util;
+  var ipc_options, local_options, log, log_options, nginx_options, remote_options, util;
 
   util = require('util');
 
@@ -26,6 +26,18 @@
       }
     }
     return results;
+  };
+
+  nginx_options = {
+    protocol: 'ws+unix',
+    port: null,
+    host: null,
+    uid: void 0, // defaults to user starting server
+    gid: 33, // group 'www-data'
+    mode: 0o660,
+    path: '/tmp/stack-rmi',
+    log_level: 2,
+    log: log
   };
 
   ipc_options = {
