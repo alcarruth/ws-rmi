@@ -1,13 +1,15 @@
-
+# -*- coffee -*-
 #
-# ws_rmi_client
+# src/lib/ws_rmi_client.coffee
 #
 
-# works both in browser and in node
+{ random_id } = require('./random_id')
+
+# This should work both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
 
-RMI_Connection = require('./rmi').Connection
-
+{ WS_RMI_Connection } = require('./ws_rmi_connection')
+{ WS_RMI_Object } = require('./ws_rmi_object')
 
 class WS_RMI_Client
 
@@ -15,7 +17,7 @@ class WS_RMI_Client
   # create and register desired WS_RMI_Objects at construction.
   #
   constructor: (@objects, @options = {}, Connection) ->
-    @id = "WS_RMI_Client-#{Math.random().toString()[2..]}"
+    @id = random_id("WS_RMI_Client")
     @log_level = @options?.log_level || 2
     @log = @options?.log || console.log
 
@@ -78,4 +80,4 @@ class WS_RMI_Client
     @ws.close()
 
 
-module.exports = WS_RMI_Client
+exports.WS_RMI_Client = WS_RMI_Client

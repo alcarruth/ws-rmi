@@ -1,11 +1,11 @@
 #!/usr/bin/env coffee
 #
-#  test/ipc/client.coffee
+#  file: src/examples/stack/ipc/client.coffee
 #
 
-{ Client } = require('../stack-rmi')
-options = require('../settings').ipc_options
+{ Stack_RMI_Client } = require('../stack_rmi_client')
+options = require('./settings').ipc_options
 
-client = new Client(options)
+client = new Stack_RMI_Client(options)
 
 module.exports = client

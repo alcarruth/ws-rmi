@@ -1,6 +1,6 @@
-#!/bin/env/ coffee
+# -*- coffee -*-
 #
-#  ws_rmi_server
+#  src/lib/ws_rmi_server.coffee
 #
 
 process = require('process')
@@ -9,7 +9,8 @@ ws = require('ws')
 http = require('http')
 https = require('https')
 
-RMI_Connection = require('./rmi').Connection
+{ random_id } = require('./random_id')
+{ WS_RMI_Connection } = require('./ws_rmi_connection')
 
 # An instance of WS_RMI_Server provides remote method invocation (RMI)
 # services for its @objects to clients connected by a websocket.
@@ -28,12 +29,12 @@ class WS_RMI_Server
   # It seems like this might frequently be the case though...
   #
   constructor: (@objects, @options = {}, Connection) ->
-    @id = "WS_RMI_Server-#{Math.random().toString()[2..]}"
+    @id = random_id("WS_RMI_Server")
     @log_level = @options?.log_level || 2
     @log = @options?.log || console.log
 
-    # The connection class - defaults to RMI_Connection
-    @Connection = Connection || RMI_Connection
+    # The connection class - defaults to WS_RMI_Connection
+    @Connection = Connection || WS_RMI_Connection
 
     # connections added here as they are created
     @connections = []
@@ -112,7 +113,10 @@ class WS_RMI_Server
         stats = fs.statSync(@path)
         uid = @options.uid || stats.uid
         gid = @options.gid || stats.gid
+        mode = @options.mode || 0o664
+        @log("uid: #{uid}, gid: #{gid}")
         fs.chownSync(@path, uid, gid)
+        fs.chmodSync(@path, mode)
 
       # otherwise start with TCP options
       else
@@ -140,4 +144,4 @@ class WS_RMI_Server
     @log("server stopped.")
 
 
-module.exports = WS_RMI_Server
+exports.WS_RMI_Server = WS_RMI_Server

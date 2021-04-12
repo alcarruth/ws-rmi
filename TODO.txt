@@ -1,0 +1,5 @@
+
+IMPORTANT:
+
+Separate client and server code so browserify does not try to follow
+server 'require' dependencies.
