@@ -26,7 +26,7 @@ function build_examples {
 }
 
 function browserify {
-  node node_modules/browserify/bin/cmd.js $@
+  node ./node_modules/browserify/bin/cmd.js $@
 }
 
 function build_browser {
