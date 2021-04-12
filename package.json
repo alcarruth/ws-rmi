@@ -29,7 +29,6 @@
     "url": "https://github.com/alcarruth/ws-rmi/issues"
   },
   "homepage": "https://github.com/alcarruth/ws-rmi#readme",
-  "devDependencies": {},
   "dependencies": {
     "browserify": "^17.0.0",
     "coffeescript": "^2.3.2",
