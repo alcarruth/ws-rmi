@@ -1,6 +1,6 @@
 # -*- coffee -*-
 #
-#  src/lib/ws_rmi_server.coffee
+#  src/server/ws_rmi_server.coffee
 #
 
 process = require('process')
@@ -9,8 +9,19 @@ ws = require('ws')
 http = require('http')
 https = require('https')
 
-{ random_id } = require('./random_id')
-{ WS_RMI_Connection } = require('./ws_rmi_connection')
+# TODO:
+# WS_RMI_Object is not used because WS_RMI_Server is provided with an
+# array of these already constructed.  Maybe it would be a good thing
+# for WS_RMI_Server to construct these and relieve the user of that
+# responsibility.
+# 
+{
+  WS_RMI_Connection
+  WS_RMI_Object
+  random_id
+  #
+} = require('../common')
+
 
 # An instance of WS_RMI_Server provides remote method invocation (RMI)
 # services for its @objects to clients connected by a websocket.

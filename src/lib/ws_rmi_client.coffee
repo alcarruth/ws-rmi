@@ -1,15 +1,25 @@
 # -*- coffee -*-
 #
-# src/lib/ws_rmi_client.coffee
+# src/client/ws_rmi_client.coffee
 #
-
-{ random_id } = require('./random_id')
 
 # This should work both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
 
-{ WS_RMI_Connection } = require('./ws_rmi_connection')
-{ WS_RMI_Object } = require('./ws_rmi_object')
+
+# TODO:  What about WS_RMI_Stub?  Is it not used?
+# Answer: it is used in WS_RMI_Connection.  All the stubs
+# are associated with the connection.  Is this good?  Should
+# they maybe all be hanging off the client?
+# 
+{
+  WS_RMI_Connection
+  WS_RMI_Object
+  WS_RMI_Stub
+  random_id
+  #
+} = require('../common')
+
 
 class WS_RMI_Client
 
