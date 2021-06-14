@@ -180,7 +180,7 @@ class WS_RMI_Connection
       for id, spec of result
         { name, method_names } = spec
         stub = new WS_RMI_Stub(id, name, method_names, this)
-        @stubs[stub.name] = stub
+        @stubs[id] = stub
 
     # error handler
     eh = (error) =>
@@ -192,6 +192,11 @@ class WS_RMI_Connection
     # @send_request() returns a promise
     @send_request('admin', 'get_stub_specs', []).then(cb).catch(eh)
 
+  get_stub: (id) =>
+    if @stubs[id]?
+      return @stubs[id]
+    else
+      return null
 
   #--------------------------------------------------------------------
   # Generic messaging methods

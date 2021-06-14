@@ -104,6 +104,7 @@ class WS_RMI_Server
       try
         @log("WS_RMI_Server: trying new connection: ", ws: ws)
         conn = new @Connection(this, ws, @options)
+        await conn.init_stubs()
         @connections.push(conn)
         @log("connection added:", 'conn.id': conn.id)
       catch error
