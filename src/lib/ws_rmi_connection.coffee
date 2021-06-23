@@ -20,7 +20,7 @@ class WS_RMI_Connection
   # method invocation and to respond to such requests.
   #
   # TODO: I have not settled the design as yet.  Previously the RMI's
-  # were requested by a RMI_Client and responded to by a RMI_Server.
+  # were requested by a WS_RMI_Client and responded to by a WS_RMI_Server.
   # My current thinking is that that functionality might be better off
   # here.
   #
