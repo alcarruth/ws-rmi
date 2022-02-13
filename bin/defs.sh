@@ -4,7 +4,13 @@
 root_dir="."
 
 function clean {
-    rm -rf ./lib/ ./client/ ./server/ ./common/
+    echo "rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/"
+    rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/
+}
+
+function build_doc {
+  echo "building ws-rmi/doc"
+  cp -r ./src/doc/ .
 }
 
 function build_lib {
@@ -33,6 +39,7 @@ function build_common {
 }
 
 function build {
+    build_doc
     build_lib
     build_common
     build_client

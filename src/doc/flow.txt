@@ -1,0 +1,74 @@
+
+Remote Method Invocation Flow
+------------------------------
+
+
+
+      method_call: (args, cb)        object.method(args,cb)
+                │                             ^
+                v                             │
+           rmi.invoke()                 rmi.handle(msg)
+                │                             ^
+                v                             │    
+           cb_mgr.send()              cb_mgr.handle_msg()
+                │                             ^
+                v                             │            
+         codec_mgr.send()              codec.handle_msg()
+                │                             ^
+                v                             │            
+            ws.send()                   ws.onMessage()
+                │                             ^            
+                v                             │            
+     ┌─────────────────────┐  ws   ┌──────────┴──────────┐
+     │      WS Client      │------>│      WS Server      │
+     └─────────────────────┘       └─────────────────────┘
+
+
+
+
+ name: (args, cb) =>
+   cb_id = @cb_cnt++
+   cb_hash[cb_id] = cb
+   ws.send JSON.stringify
+     obj_id: @id
+     method: name
+     args: args
+     cb_id: cb_id
+
+
+ ws.on('message', (buf) =>
+   msg = JSON.parse(buf)
+   
+
+ client request
+ ---------------
+ obj.method(args, cb)
+ rmi_call(obj_id, method_name, args, cb)
+ remote_(obj_id, method_name, args, cb_id)
+ encode(obj_id, method_name, args, cb_id)
+
+ server request
+ ---------------
+ decode(obj_id, method_name, args, cb_id)
+ (obj_id, method_name, args, cb_id)
+ (obj_id, method_name, args, cb)
+ (obj, method_name, args, cb)
+ (args, cb)
+
+ server response
+ ----------------
+ rmi_cb(res_obj, err)
+ cb_mgr_cb(rmi_res_obj, err)
+ codec_mgr_cb(cb_mgr_res_obj, err)
+ ws.send(encode(res_obj))
+
+ client response
+ ----------------
+ ws.on('message',...)
+ codec_mgr.handle_response(msg)
+ cb_mgr.handle_response(decoded msg)
+ rmi_mgr.handle_response(rmi_res_obj)
+ cb(res, err)
+ 
+ 
+
