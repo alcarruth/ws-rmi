@@ -126,8 +126,9 @@ class WS_RMI_Server
         uid = @options.uid || stats.uid
         gid = @options.gid || stats.gid
         mode = @options.mode || 0o664
-        @log("uid: #{uid}, gid: #{gid}")
-        fs.chownSync(@path, uid, gid)
+        # TODO: we don't have permission to chown here 
+        # @log("uid: #{uid}, gid: #{gid}")
+        # fs.chownSync(@path, uid, gid)
         fs.chmodSync(@path, mode)
 
       # otherwise start with TCP options
