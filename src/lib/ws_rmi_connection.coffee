@@ -184,7 +184,7 @@ class WS_RMI_Connection
 
     # error handler
     eh = (error) =>
-      @log("init_stubs(): eh(): received error:", error)
+      @log("init_stubs() error: spec = ", spec)
 
     if @log_level > 1
       @log("init_stubs(): begin")
