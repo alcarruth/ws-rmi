@@ -159,7 +159,7 @@ class WS_RMI_Connection
           if id not in @exclude
             specs[id] =
               name: obj.name
-              method_names: obj.__method_names
+              method_names: obj.method_names
         if @log_level > 1
           @log("get_stub_specs():", specs)
         resolve(specs)
