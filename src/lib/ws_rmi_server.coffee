@@ -14,7 +14,7 @@ https = require('https')
 # array of these already constructed.  Maybe it would be a good thing
 # for WS_RMI_Server to construct these and relieve the user of that
 # responsibility.
-# 
+#
 {
   WS_RMI_Connection
   WS_RMI_Object
@@ -53,6 +53,23 @@ class WS_RMI_Server
     # default to 'ws+unix'
     @protocol = @options?.protocol || 'ws+unix'
 
+    # Catch 'exit' (Ctrl-D)
+    process.on('exit', =>
+      @log("WS_RMI_Server: received 'exit' (Ctrl-D)")
+      #@stop()
+      )
+
+    # Catch 'SIGQUIT'
+    process.on('SIGQUIT', =>
+      @log("WS_RMI_Server: received 'SIGQUIT'"))
+
+    # Catch 'SIGINT' (Ctrl-C)
+    process.on('SIGINT', =>
+      @log("WS_RMI_Server: received 'SIGINT' (Ctrl-C)")
+      @stop()
+      process.exit()
+      )
+
     # Protocol 'ws+unix' means IPC (inter process communication),
     # basically unix domain sockets (or something similar in
     # Windows). See docs for npm package ws.
@@ -61,25 +78,9 @@ class WS_RMI_Server
       @path = @options?.path || '/tmp/ipc_rmi'
       @url = "ws+unix://#{@path}"
 
-      # Catch 'exit' (Ctrl-D)
-      process.on('exit', =>
-        @log("WS_RMI_Server: received 'exit' (Ctrl-D)")
-        #@stop()
-        )
-
-      # Catch 'SIGQUIT'
-      process.on('SIGQUIT', =>
-        @log("WS_RMI_Server: received 'SIGQUIT'"))
-
-      # Catch 'SIGINT' (Ctrl-C)
-      process.on('SIGINT', =>
-        @log("WS_RMI_Server: received 'SIGINT' (Ctrl-C)")
-        @stop()
-        process.exit()
-        )
-      #  if fs.existsSync(@path)
-      #    fs.unlinkSync(@path)
-      #    process.exit())
+      # if fs.existsSync(@path)
+      #   fs.unlinkSync(@path)
+      #   process.exit())
 
     # Otherwise we need the usual TCP options.
     else
@@ -88,6 +89,8 @@ class WS_RMI_Server
       @path = @options?.path || ''
       @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
 
+
+
     # wss means secure websocket so we'll use https
     if @protocol == 'wss'
       @server = new https.Server(null, @options.credentials)
@@ -95,6 +98,8 @@ class WS_RMI_Server
     # otherwise just use http
     else
       @server = new http.Server(null)
+
+
 
     # Create the WebSocket server providing the http(s) server
     # created just above.
@@ -113,12 +118,12 @@ class WS_RMI_Server
         new Error(msg))
 
 
+
   # Method start()
   # Start the server.
   #
   start: =>
     try
-
       # Unix domain socket so just use @path
       if @protocol == 'ws+unix'
         @server.listen(path: @path)
@@ -126,10 +131,10 @@ class WS_RMI_Server
         uid = @options.uid || stats.uid
         gid = @options.gid || stats.gid
         mode = @options.mode || 0o664
-        # TODO: we don't have permission to chown here 
-        # @log("uid: #{uid}, gid: #{gid}")
-        # fs.chownSync(@path, uid, gid)
         fs.chmodSync(@path, mode)
+        fs.chownSync(@path, uid, gid)
+        # @log("fs.chownSync(#{@path}, #{uid}, #{gid})")
+
 
       # otherwise start with TCP options
       else
@@ -139,6 +144,7 @@ class WS_RMI_Server
 
     catch error
       @log error
+
 
   cleanup: =>
     if fs.existsSync(@path)

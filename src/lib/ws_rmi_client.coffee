@@ -11,7 +11,7 @@ WebSocket = window?.WebSocket || require('ws')
 # Answer: it is used in WS_RMI_Connection.  All the stubs
 # are associated with the connection.  Is this good?  Should
 # they maybe all be hanging off the client?
-# 
+#
 {
   WS_RMI_Connection
   WS_RMI_Object
@@ -35,6 +35,7 @@ class WS_RMI_Client
     if @protocol == 'ws+unix'
       @path = @options?.path || '/tmp/ipc_rmi'
       @url = "ws+unix://#{@path}"
+
     else
       @host = @options?.host || localhost
       @port = @options?.port || 8007
