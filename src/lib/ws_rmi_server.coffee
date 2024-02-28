@@ -4,6 +4,7 @@
 #
 
 process = require('process')
+userid = require('userid')
 fs = require('fs')
 ws = require('ws')
 http = require('http')
@@ -128,8 +129,8 @@ class WS_RMI_Server
       if @protocol == 'ws+unix'
         @server.listen(path: @path)
         stats = fs.statSync(@path)
-        uid = @options.uid || stats.uid
-        gid = @options.gid || stats.gid
+        uid = userid.uid(@options.user)
+        gid = userid.gid(@options.group)
         mode = @options.mode || 0o664
         fs.chmodSync(@path, mode)
         fs.chownSync(@path, uid, gid)
