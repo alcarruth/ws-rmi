@@ -1,6 +1,7 @@
 # -*- coffee -*-
 #
-#  src/server/ws_rmi_server.coffee
+#  file: /src/server/ws_rmi_server.coffee
+#  package: ws-rmi
 #
 
 process = require('process')
@@ -19,10 +20,10 @@ https = require('https')
 {
   WS_RMI_Connection
   WS_RMI_Object
-  random_id
   #
 } = require('../common')
 
+{ random_id } = require('armazilla-util')
 
 # An instance of WS_RMI_Server provides remote method invocation (RMI)
 # services for its @objects to clients connected by a websocket.

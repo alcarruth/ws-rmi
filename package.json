@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/alcarruth/ws-rmi#readme",
   "dependencies": {
+    "armazilla-util": "git@github.com:alcarruth/armazilla-util",
     "browserify": "^17.0.0",
     "coffeescript": "^2.3.2",
     "elliptic": "^6.5.4",

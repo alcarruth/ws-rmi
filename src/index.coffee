@@ -1,5 +1,8 @@
-# file: index.js
-# package: ws-rmi
+# -*- coffee -*-
+#
+#  file: /src/index.coffee
+#  package: ws-rmi
+#
 
 lib = require('./lib/index')
 

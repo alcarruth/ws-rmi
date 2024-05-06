@@ -1,9 +1,10 @@
 # -*- coffee -*-
 #
-# src/lib/ws_rmi_object.coffee
+#  file: /src/lib/ws_rmi_object.coffee
+#  package: ws-rmi
 #
 
-{ random_id } = require('./random_id')
+{ random_id } = require('armazilla-util')
 
 #----------------------------------------------------------------------
 # WS_RMI_Object

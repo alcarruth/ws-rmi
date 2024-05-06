@@ -1,6 +1,7 @@
 # -*- coffee -*-
 #
-# src/client/ws_rmi_client.coffee
+#  file: /src/client/ws_rmi_client.coffee
+#  package: ws-rmi
 #
 
 # This should work both in browser and in node
@@ -16,10 +17,10 @@ WebSocket = window?.WebSocket || require('ws')
   WS_RMI_Connection
   WS_RMI_Object
   WS_RMI_Stub
-  random_id
   #
 } = require('../common')
 
+{ random_id } = require('armazilla-util')
 
 class WS_RMI_Client
 

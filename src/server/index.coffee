@@ -1,13 +1,13 @@
 # -*- coffee -*-
 #
 #  file; src/server/index.coffee
+#  package: ws-rmi
 #
 
 {
   WS_RMI_Connection
   WS_RMI_Object
   WS_RMI_Stub
-  random_id
   #
 } = require('../common')
 
@@ -20,6 +20,4 @@ module.exports = {
   WS_RMI_Connection
   WS_RMI_Object
   WS_RMI_Stub
-  random_id
 }
-  
