@@ -4,11 +4,26 @@
 #  package: ws-rmi
 #
 
-lib = require('./lib/index')
+{
+  RMI_Client
+  RMI_Server
+  RMI_Connection
+  RMI_Object
+  RMI_Stub
+  RMI_Object_Registry
+  RMI_Stub_Registry
+  #
+} = require('./lib')
 
-exports.Connection = lib.WS_RMI_Connection
-exports.Object = lib.WS_RMI_Object
-exports.Stub = lib.WS_RMI_Stub
+test = require('./test')
 
-exports.Server = lib.WS_RMI_Server
-exports.Client = lib.WS_RMI_Client
+module.exports = {
+  RMI_Client
+  RMI_Server
+  RMI_Connection
+  RMI_Object
+  RMI_Stub
+  RMI_Object_Registry
+  RMI_Stub_Registry
+  test
+}

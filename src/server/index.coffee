@@ -1,23 +1,19 @@
 # -*- coffee -*-
 #
-#  file; src/server/index.coffee
+#  file: /src/server/index.coffee
 #  package: ws-rmi
 #
 
-{
-  WS_RMI_Connection
-  WS_RMI_Object
-  WS_RMI_Stub
-  #
-} = require('../common')
-
-{ WS_RMI_Server } = require('../lib/ws_rmi_server')
-
+{ RMI_Server } = require('../lib/rmi_server')
+{ RMI_Connection } = require('../lib/rmi_connection')
+{ RMI_Object, RMI_Stub } = require('../lib/rmi_object')
+{ RMI_Object_Registry, RMI_Stub_Registry } = require('../lib/rmi_registry')
 
 module.exports = {
-  #
-  WS_RMI_Server
-  WS_RMI_Connection
-  WS_RMI_Object
-  WS_RMI_Stub
+  RMI_Server
+  RMI_Connection
+  RMI_Object
+  RMI_Stub
+  RMI_Object_Registry
+  RMI_Stub_Registry
 }

@@ -1,15 +1,15 @@
 # -*- coffee -*-
 #
-#  file: /src/lib/ws_rmi_connection.coffee
+#  file: /src/lib/rmi_connection_separate.coffee
 #  package: ws-rmi
 #
 
-{ random_id } = require('armazilla-util')
-{ WS_RMI_Stub } = require('./ws_rmi_object')
+{ random_id, Logger } = require('armazilla-util')
+{ RMI_Object_Registry, RMI_Stub_Registry } = require('./rmi_registry')
 
 #----------------------------------------------------------------------
 
-class WS_RMI_Connection
+class RMI_Connection
 
   # RMI_Connection is basically just a wrapper around a socket and is
   # intendend to be applied on both ends of the websocket.  @owner is
@@ -26,46 +26,13 @@ class WS_RMI_Connection
   # here.
   #
   constructor: (@owner, @ws, @options) ->
-    @id = random_id('WS_RMI_Connection')
-    @log = @options?.log || console.log
-    @log_level = @options?.log_level || 1
+    @id = random_id('RMI_Connection')
+    @logger = new Logger(this, { threshold: 2, options: @options })
+    @log = @logger.log
     @waiter = null
 
-    # WS_RMI_Objects are registered here with their id as key.  The
-    # registry is used by method recv_request() which receives just an
-    # id in the message and must look up the object to invoke it's
-    # method.
-    #
-    @registry = {}
-    @exclude = []
-
-    # Pseudo-object 'admin' with method 'init'
-    #
-    # TODO: Is it better to use this pseudo-object approach or just
-    # instantiate WS_RMI_Object to the same effect?  The point is that
-    # 'admin' is special in that it is present at Connection creation
-    # time.  It should be excluded from init() responses since the
-    # caller already has it.  Should it then be excluded from the
-    # registry or just skipped over when responding to init?  The
-    # benefit of including it in the registry is that it requires no
-    # special treatment in method recv_request().  My current choice
-    # is to include it in the registry here and skip over it in
-    # init().
-    #
-    # In the future there may be other objects of this administrative
-    # sort.  Maybe a more structured general solution should be
-    # considered.
-    #
-    @admin =
-      id: 'admin'
-      name: 'admin'
-      get_stub_specs: @get_stub_specs
-      method_names: ['get_stub_specs']
-
-    @registry['admin'] = @admin
-    @exclude.push('admin')
-
-    @stubs = {}
+    @registry = @owner.registry
+    @stubs = new RMI_Stub_Registry(this, @options)
 
     # RMI's are given a unique number and the Promise's resolve() and
     # reject() functions are kept as callbacks to be executed when an
@@ -75,11 +42,6 @@ class WS_RMI_Connection
     #
     @rmi_cnt = 0
     @rmi_hash = {}
-
-    # add remote objects
-    #@log("@owner.objects: #{@owner.objects}")
-    for obj in @owner.objects
-      @add_object(obj)
 
     # Events are mapped to handler methods defined below.
     #
@@ -103,21 +65,17 @@ class WS_RMI_Connection
   #
   on_Open: (evt) =>
     # @log("connection opened: ", id: @id)
-    await @init_stubs()
-    @init() if @init?
 
   # This is the "main event".  It's what we've all been waiting for!
   on_Message: (evt) =>
-    if @log_level > 1
-      @log("WS_RMI_Connection.on_Message(): ", evt.data)
+    @log("RMI_Connection.on_Message(): ", evt.data)
     @recv_message(evt.data)
 
   # TODO: perhaps somebody should be notified here ?-) Who wanted this
   # connection in the first place?  Do we have their contact info?
   #
   on_Close: (evt) =>
-    if @log_level > 0
-      @log("peer disconnected: ", id: @id)
+    @log("peer disconnected: ", id: @id)
 
   # TODO: think of something to do here.
   on_Error: (evt) =>
@@ -131,73 +89,8 @@ class WS_RMI_Connection
   disconnect: =>
     @ws.close()
 
-
-  #----------------------------------------------------------
-  # Object registry methods
-
-  # Register a WS_RMI_Object for RMI
-  add_object: (obj) =>
-    @registry[obj.id] = obj
-    obj.set_connection(this)
-
-  #register: (obj) =>
-  #  @registry[obj.id] = obj
-
-  # I refuse to comment on what this one does.
-  del_object: (id) =>
-    delete @registry[id]
-
-  # Method get_stub_specs() is a server side built-in remote method.
-  # It is invoked by method invoke_stubs() on the client side. (see
-  # below)
-  #
-  get_stub_specs: =>
-
-    new Promise((resolve, reject) =>
-      try
-        specs = {}
-        for id, obj of @registry
-          if id not in @exclude
-            specs[id] =
-              name: obj.name
-              method_names: obj.method_names
-        if @log_level > 1
-          @log("get_stub_specs():", specs)
-        resolve(specs)
-
-      catch error
-        @log("Error: init():", specs, error)
-        reject("Error: init():", specs))
-
-  # Call get_stub_specs() on the server side, then build the local
-  # stubs for the remote objects' methods.
-  #
-  init_stubs: =>
-
-    # callback
-    cb = (result) =>
-      if @log_level > 1
-        @log("init_stubs(): cb(): ", result: result)
-      for id, spec of result
-        { name, method_names } = spec
-        stub = new WS_RMI_Stub(id, name, method_names, this)
-        @stubs[id] = stub
-
-    # error handler
-    eh = (error) =>
-      @log("init_stubs() error: spec = ", spec)
-
-    if @log_level > 1
-      @log("init_stubs(): begin")
-
-    # @send_request() returns a promise
-    @send_request('admin', 'get_stub_specs', []).then(cb).catch(eh)
-
-  get_stub: (id) =>
-    if @stubs[id]?
-      return @stubs[id]
-    else
-      return null
+  init: =>
+    await @stubs.init()
 
   #--------------------------------------------------------------------
   # Generic messaging methods
@@ -206,10 +99,9 @@ class WS_RMI_Connection
   # JSON.stringify and send.  Returns a promise.
   send_message: (data_obj) =>
 
-    if @log_level > 1
-      @log("send_message(): ",
-        data_obj: data_obj,
-        '@ws.readyState': @ws.readyState)
+    @log("send_message(): ",
+      data_obj: data_obj,
+      '@ws.readyState': @ws.readyState)
 
     try
       # The WebSocket API seems flawed.  When a new ws is created as
@@ -263,14 +155,11 @@ class WS_RMI_Connection
   # JSON.parse and handle as appropriate.
   recv_message: (data) =>
 
-    if @log_level > 1
-      @log("WS_RMI_Connection.recv_message() ",
-        data: data)
+    @log("RMI_Connection.recv_message() ", data: data)
 
     { type, msg } = JSON.parse(data)
 
-    if @log_level > 1
-      @log(type: type, msg: msg)
+    @log(type: type, msg: msg)
 
     if type == 'request'
       return @recv_request(msg)
@@ -288,11 +177,10 @@ class WS_RMI_Connection
   #
 
   # Method send_request()
-  send_request: (obj_id, method, args) =>
+  send_request: ({ obj_id, method, args }) =>
 
-    msg = { obj_id: obj_id, method: method, args: args }
-    if @log_level > 1
-      @log("send_request(): ", msg: msg)
+    msg = { obj_id, method, args }
+    @log("send_request(): ", msg: msg )
 
     new Promise (resolve, reject) =>
       try
@@ -307,12 +195,10 @@ class WS_RMI_Connection
 
 
   # Method recv_request()
-  recv_request: (msg) =>
+  recv_request: ({ obj_id, method_name, args }) =>
+    @registry.handle_request({ obj_id, method_name, args })
 
-    if @log_level > 1
-      @log("recv_request(): ", msg: msg)
-
-    { obj_id, method, args, rmi_id } = msg
+    @log("recv_request(): ", msg: { obj_id, method_name, args })
 
     # callback used below
     cb = (res) => @send_response(rmi_id, res, null)
@@ -332,26 +218,24 @@ class WS_RMI_Connection
   #
 
   # Method send_response()
-  send_response : (rmi_id, result, error) =>
-    msg = { rmi_id: rmi_id, result: result, error: error }
+  send_response : ({ rmi_id, result, error }) =>
+    msg = { rmi_id, result, error }
 
-    if @log_level > 1
-      @log("send_response(): ", msg: msg)
+    @log("send_response(): ", msg: msg)
 
     new Promise (resolve, reject) =>
       try
         @send_message(type: 'response', msg: msg)
       catch error
         @log("Error in send_response():", msg: msg)
-        reject({rmi_id, result, error})
+        reject( {rmi_id, result, error} )
 
 
   # Method recv_resonse()
-  recv_response : (response) =>
-    if @log_level > 1
-      @log("recv_response(): ", response: response)
+  recv_response : ({ rmi_id, result, error }) =>
+    response = { rmi_id, result, error }
+    @log("recv_response(): ", response: response)
     try
-      { rmi_id, result, error } = response
       { request, resolve, reject } = @rmi_hash[rmi_id]
       if error
         reject({request, error})
@@ -363,4 +247,4 @@ class WS_RMI_Connection
 
 #----------------------------------------------------------------------
 
-exports.WS_RMI_Connection = WS_RMI_Connection
+exports.RMI_Connection = RMI_Connection

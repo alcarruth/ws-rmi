@@ -1,36 +1,34 @@
 # -*- coffee -*-
 #
-#  file: /src/client/ws_rmi_client.coffee
+#  file: /src/client/rmi_client.coffee
 #  package: ws-rmi
 #
 
 # This should work both in browser and in node
 WebSocket = window?.WebSocket || require('ws')
 
+{ random_id, Logger } = require('armazilla-util')
+{ RMI_Connection } = require('./rmi_connection')
+{ RMI_Object_Registry } = require('./rmi_registry')
 
-# TODO:  What about WS_RMI_Stub?  Is it not used?
-# Answer: it is used in WS_RMI_Connection.  All the stubs
-# are associated with the connection.  Is this good?  Should
-# they maybe all be hanging off the client?
-#
-{
-  WS_RMI_Connection
-  WS_RMI_Object
-  WS_RMI_Stub
+
+class RMI_Client
+
+  # Connnection should be a sub-class of RMI_Connection in order to
+  # create and register desired RMI_Objects at construction.
   #
-} = require('../common')
-
-{ random_id } = require('armazilla-util')
-
-class WS_RMI_Client
-
-  # Connnection should be a sub-class of WS_RMI_Connection in order to
-  # create and register desired WS_RMI_Objects at construction.
-  #
-  constructor: (@objects, @options = {}, Connection) ->
-    @id = random_id("WS_RMI_Client")
-    @log_level = @options?.log_level || 2
-    @log = @options?.log || console.log
+  constructor: ({ objects, options, Socket, Connection }) ->
+    @id = random_id(this)
+    @objects = objects || {}
+    @options = options || {}
+    @Socket = Socket || WebSocket
+    @Connection = Connection || RMI_Connection
+    @registry = new RMI_Object_Registry({
+      owner: this
+      options: @options
+      })
+    @logger = new Logger(this, { threshold: 2, options: options })
+    @log = @logger.log
 
     @protocol = @options?.protocol || 'ws+unix'
     if @protocol == 'ws+unix'
@@ -44,7 +42,13 @@ class WS_RMI_Client
       @url = "#{@protocol}://#{@host}:#{@port}/#{@path}"
 
     @connection = null
-    @Connection = Connection || RMI_Connection
+
+
+  add_object: ({ obj, method_names }) =>
+    @objects[obj.id] = { obj, method_names }
+
+  update_registry: =>
+    @registry.update()
 
 
   #--------------------------------------------------------------------
@@ -65,17 +69,18 @@ class WS_RMI_Client
         # So the 'open' event can be emitted BEFORE the handler is set!
         # See note below ...
         #
-        @ws = new WebSocket(@url)
+        @ws = new @Socket(@url)
 
         # Note: @ws exists but is not necessarily ready yet.  This
-        # issue is addressed in the WS_RMI_Connection.send_message()
+        # issue is addressed in the RMI_Connection.send_message()
         # method (q.v.)
         #
         @connection = new @Connection(this, @ws, @options)
+        await @connection.init()
         resolve(@connection)
 
       catch error
-        msg = "\nWS_RMI_Client: connect failed.\n"
+        msg = "\nRMI_Client: connect failed.\n"
         msg += error.toString() + '\n'
         msg += error.stack.split('\n').filter((x)-> /ws-rmi/.test(x)).join('\n')
         @log(msg)
@@ -92,4 +97,4 @@ class WS_RMI_Client
     @ws.close()
 
 
-exports.WS_RMI_Client = WS_RMI_Client
+exports.RMI_Client = RMI_Client
