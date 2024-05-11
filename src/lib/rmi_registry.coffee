@@ -12,11 +12,17 @@
 class RMI_Registry_Admin # extends RMI_Object
 
   constructor: (@registry) ->
-    @id = random_id(this)
+    @id = 'admin'
     @name = 'admin'
     @method_names = ['get_stub_specs']
     @logger = new Logger( obj: this, threshold: 0, options: @options )
     @log = @logger.log
+
+  get_stub_spec: => return {
+    obj_id: @id
+    name: @name
+    method_names: @method_names
+    }
 
   # Method get_stub_specs() is a server side built-in remote method.
   # It is invoked by method invoke_stubs() on the client side. (see
@@ -24,12 +30,11 @@ class RMI_Registry_Admin # extends RMI_Object
   #
   get_stub_specs: =>
     try
-      specs = []
-      for obj_id, obj of @registry.objects
-        if not @registry.exclude_ids[obj_id]?
-          { name, method_names } = obj
-          specs.push({ obj_id, name, method_names })
+      specs = (obj.get_stub_spec() for id, obj of @registry.objects)
+      excluded = (k for k,v of @registry.exclude_ids)
+      specs = specs.filter((obj) -> obj.id not in excluded)
       return specs
+
     catch error
       @log(specs, error.msg)
 
@@ -47,10 +52,10 @@ class RMI_Object_Registry
     @exclude_ids = {}
     @set_owner(owner)
     @set_connection(connection) || null
-    @add_admin()
     @options = options || {}
     @logger = new Logger( obj: this, threshold: 0, options: @options )
     @log = @logger.log
+    @add_admin()
 
   set_owner: (owner) =>
     @owner = owner
@@ -73,6 +78,7 @@ class RMI_Object_Registry
 
   add_admin: =>
     @admin = new RMI_Registry_Admin(this)
+    @log(@admin.get_stub_spec())
     @objects[@admin.id] = @admin
     @exclude_ids[@admin.id] = true
 
@@ -80,10 +86,12 @@ class RMI_Object_Registry
   # obj: a coffeescript object
   # method_names: a list of methods to expose
   #
-  add_object: ({ obj, method_names }) =>
+  add_object: ({ obj, name, method_names }) =>
+    name = name || obj.name
     options = @options
-    console.log "adding: #{obj}, method_names" #{method_names}"
-    rmi_obj = new RMI_Object({ obj, method_names, options })
+    rmi_obj = new RMI_Object({ obj, name, method_names, options })
+    id = rmi_obj.id
+    @log({ id, name, method_names })
     @objects[rmi_obj.id] = rmi_obj
     # why?
     # rmi_obj.connection = @connection
@@ -104,16 +112,17 @@ class RMI_Object_Registry
   # Method handle_request(request)
   # request: a request JSON string
   #
-  handle_request: (request) =>
+  handle_request: ({ obj_id, method_name, args }) =>
+    request = { obj_id, method_name, args }
     @log(request)
     return new Promise (resolve, reject) =>
       try
-        { obj_id, method_name, args } = request
         obj = @objects[obj_id]
-        res = await obj[method_name](args...)
-        resolve(res)
+        result = await obj[method_name](args...)
+        @log({ request, result })
+        resolve(result)
       catch err
-        @log(request)
+        reject(err)
 
 
 #-----------------------------------------------------------------------
@@ -125,6 +134,7 @@ class RMI_Stub_Registry
     @id = random_id(this)
     @stubs = {}
     @logger = new Logger( obj: this, threshold: 0, options: @options )
+    @log = @logger.log
 
   # Method init_stubs(conn)
   # conn: an instance of RMI_Connection
@@ -132,12 +142,14 @@ class RMI_Stub_Registry
   # then build the local stubs for the remote objects' methods.
   #
   init: =>
+    request = {
+      obj_id: 'admin'
+      method_name: 'get_stub_specs'
+      args: []
+      }
     try
-      specs = await @connection.send_request(
-        obj_id: 'admin'
-        method_name: 'get_stub_specs'
-        args: []
-      )
+      specs = await @connection.send_request(request)
+      @log(specs)
       for { obj_id, name, method_names } in specs
         @add_stub({ obj_id, name, method_names })
     catch err
@@ -145,6 +157,7 @@ class RMI_Stub_Registry
 
 
   add_stub: ({ obj_id, name, method_names }) =>
+    @log({ obj_id, name, method_names })
     send_request = @connection.send_request
     @stubs[obj_id] = new RMI_Stub({ obj_id, name, method_names, send_request })
 

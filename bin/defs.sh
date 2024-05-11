@@ -4,8 +4,8 @@
 root_dir="."
 
 function clean {
-    echo "rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/"
-    rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/
+  echo "rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/"
+  rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/ ./test/
 }
 
 function build_doc {
@@ -14,34 +14,46 @@ function build_doc {
 }
 
 function build_lib {
-    echo "building ws-rmi/lib"
-    mkdir -p ./lib
-    coffee -c -o ./lib ./src/lib/*.coffee > /dev/null
-    coffee -c -o . ./src/index.coffee > /dev/null
+  echo "building ws-rmi/lib"
+  mkdir -p ./lib
+  coffee -c -o ./lib ./src/lib/*.coffee > /dev/null
+  coffee -c -o . ./src/index.coffee > /dev/null
 }
 
 function build_client {
-    echo "building ws-rmi/client"
-    mkdir -p ./client
-    coffee -c -o ./client/ ./src/client/*.coffee > /dev/null
+  echo "building ws-rmi/client"
+  mkdir -p ./client
+  coffee -c -o ./client/ ./src/client/*.coffee > /dev/null
 }
 
 function build_server {
-    echo "building ws-rmi/server"
-    mkdir -p ./server
-    coffee -c -o ./server ./src/server/*.coffee > /dev/null
+  echo "building ws-rmi/server"
+  mkdir -p ./server
+  coffee -c -o ./server ./src/server/*.coffee > /dev/null
 }
 
 function build_common {
-    echo "building ws-rmi/common"
-    mkdir -p ./common
-    coffee -c -o ./common ./src/common/*.coffee > /dev/null
+  echo "building ws-rmi/common"
+  mkdir -p ./common
+  coffee -c -o ./common ./src/common/*.coffee > /dev/null
+}
+
+function build_test {
+  echo "building ws-rmi/test"
+  mkdir -p ./test/
+  coffee -c -o ./test ./src/test/*.coffee > /dev/null
+  for dir in examples; do
+    echo "building ws-rmi/test/${dir}"
+    mkdir -p ./test/${dir}/
+    coffee -c -o ./test/${dir} ./src/test/${dir}/*.coffee > /dev/null
+  done
 }
 
 function build {
-    build_doc
-    build_lib
-    build_common
-    build_client
-    build_server
+  build_doc
+  build_lib
+  build_common
+  build_client
+  build_server
+  build_test
 }

@@ -5,18 +5,13 @@
   //  file: /src/index.coffee
   //  package: ws-rmi
 
-  var lib;
+  var RMI_Client, RMI_Connection, RMI_Object, RMI_Object_Registry, RMI_Server, RMI_Stub, RMI_Stub_Registry, test;
 
-  lib = require('./lib/index');
+  
+  ({RMI_Client, RMI_Server, RMI_Connection, RMI_Object, RMI_Stub, RMI_Object_Registry, RMI_Stub_Registry} = require('./lib'));
 
-  exports.Connection = lib.RMI_Connection;
+  test = require('./test');
 
-  exports.Object = lib.RMI_Object;
-
-  exports.Stub = lib.RMI_Stub;
-
-  exports.Server = lib.RMI_Server;
-
-  exports.Client = lib.RMI_Client;
+  module.exports = {RMI_Client, RMI_Server, RMI_Connection, RMI_Object, RMI_Stub, RMI_Object_Registry, RMI_Stub_Registry, test};
 
 }).call(this);

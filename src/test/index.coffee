@@ -1,11 +1,17 @@
 #!/usr/bin/env coffee
-# 
-#  file: /src/stack/index.coffee
-#  package: ws-rmi-examples
-# 
+#
+#  file: /src/test/index.coffee
+#  package: ws-rmi
+#
 
-ipc = require('./ipc')
-tcp = require('./tcp')
+client = require('./client')
+server = require('./server')
+options = require('./options')
+examples = require('./examples')
 
-exports.ipc = ipc
-exports.tcp = tcp
+module.exports = {
+  client
+  server
+  options
+  examples
+}

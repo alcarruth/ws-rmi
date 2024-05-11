@@ -130,6 +130,7 @@ class RMI_Server
 
   add_object: ({ obj, method_names }) =>
     @objects[obj.id] = { obj, method_names }
+    @registry.update()
 
   update_registry: =>
     @registry.update()

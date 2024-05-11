@@ -26,6 +26,12 @@ class RMI_Object
         (args...) =>
           @invoke({ method_name, args }))(name)
 
+  get_stub_spec: => return {
+    obj_id: @id
+    name: @name
+    method_names: @method_names
+    }
+
   # Method invoke() is called by connection.recv_request() it executes
   # the appropriate method and returns a promise.
   #
@@ -48,14 +54,14 @@ class RMI_Object
 
 class RMI_Stub
 
-  constructor: ({ obj_id, name, method_names, send_request }) ->
+  constructor: ({ obj_id, name, method_names, send_request, options }) ->
     @id = random_id(this)
     @obj_id = obj_id
     @name = name || @obj_id
     @method_names = method_names || []
     @send_request = send_request || null
     @options = options || {}
-    @logger = new Logger( obj: this, threshold: 0, options: options )
+    @logger = new Logger( obj: this, threshold: 0, options: @options )
     @log = @logger.log
 
     for name in @method_names

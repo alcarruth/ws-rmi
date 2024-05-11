@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 #
-#  file: /src/test/stack.coffee
+#  file: /src/test/examples/stack.coffee
 #  package: ws-rmi
 #
 
@@ -10,6 +10,7 @@ class Stack
 
   constructor: ->
     @id = random_id(this)
+    @name = 'stack'
     @stack = []
 
   push: (x) =>
@@ -29,4 +30,7 @@ class Stack
         reject(error)
 
 
-exports.Stack = Stack
+module.exports = {
+  Class: Stack
+  method_names: [ 'push', 'pop' ]
+}

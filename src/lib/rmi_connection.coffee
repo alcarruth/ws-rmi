@@ -11,6 +11,7 @@
 
 class RMI_Connection
 
+
   # RMI_Connection is basically just a wrapper around a socket and is
   # intendend to be applied on both ends of the websocket.  @owner is
   # the rmi_client or the rmi_server which established this end of the
@@ -68,14 +69,14 @@ class RMI_Connection
 
   # This is the "main event".  It's what we've all been waiting for!
   on_Message: (evt) =>
-    @log("RMI_Connection.on_Message(): ", evt.data)
+    #@log(evt.data)
     @recv_message(evt.data)
 
   # TODO: perhaps somebody should be notified here ?-) Who wanted this
   # connection in the first place?  Do we have their contact info?
   #
   on_Close: (evt) =>
-    @log("peer disconnected: ", id: @id)
+    @log("peer disconnected.", evt.data)
 
   # TODO: think of something to do here.
   on_Error: (evt) =>
@@ -97,33 +98,16 @@ class RMI_Connection
   #
 
   # JSON.stringify and send.  Returns a promise.
-  send_message: (data_obj) =>
-
-    @log("send_message(): ",
-      data_obj: data_obj,
-      '@ws.readyState': @ws.readyState)
+  send_message: ({ type, msg }) =>
+    @log({ type, msg })
+    data = JSON.stringify({ type, msg })
 
     try
-      # The WebSocket API seems flawed.  When a new ws is created as
-      # in 'new WebSocket(url)' it attempts to connect to the server
-      # at url.  Until then ws.readyState == ws.CONNECTING and any
-      # attempt to send a message will throw an error.  An 'open'
-      # event is emmitted when ws.readyState == ws.OPEN and you can
-      # set ws.onOpen to handle this event, but only AFTER the attempt
-      # to connect has already begun.  So there is a race condition
-      # between setting the handler and completing the connect
-      # protocol.
-      #
-      # The code below is intended to handle this.  It runs every time
-      # send_message() is called but is really only necessary in the
-      # beginning when the ws has just been created.
-      #
 
       # If the ws is connected then proceed as normal.
       #
       if @ws.readyState == @ws.OPEN
-        @ws.send(JSON.stringify(data_obj))
-
+        @ws.send(data)
 
       # If not ready but we're still connecting, then check again
       # every ${delay} ms.
@@ -137,8 +121,7 @@ class RMI_Connection
           tries += 1
           if @ws.readyState == @ws.OPEN || tries >= max_tries
             clearInterval(@waiter)
-            @ws.send(JSON.stringify(data_obj))), delay)
-
+            @ws.send(data, delay)))
 
       # The other possible states are CLOSED and CLOSING.  Either
       # of these is an error.
@@ -147,18 +130,13 @@ class RMI_Connection
         throw new Error('ws.readyState not OPEN or CONNECTING')
 
     catch error
-      @log("Error: send_message(): ",
-        data_obj: data_obj,
-        error: error)
+      @log({ data, error })
+
 
 
   # JSON.parse and handle as appropriate.
   recv_message: (data) =>
-
-    @log("RMI_Connection.recv_message() ", data: data)
-
     { type, msg } = JSON.parse(data)
-
     @log(type: type, msg: msg)
 
     if type == 'request'
@@ -177,40 +155,32 @@ class RMI_Connection
   #
 
   # Method send_request()
-  send_request: ({ obj_id, method, args }) =>
+  send_request: ({ obj_id, method_name, args }) =>
 
-    msg = { obj_id, method, args }
-    @log("send_request(): ", msg: msg )
+    rmi_id = @rmi_cnt++
+    msg = { rmi_id, obj_id, method_name, args }
 
     new Promise (resolve, reject) =>
       try
-        msg.rmi_id = @rmi_cnt++
-        @rmi_hash[msg.rmi_id] =
-          msg: msg
-          resolve: resolve
-          reject: reject
-        @send_message(type: 'request', msg: msg)
+        @rmi_hash[rmi_id] = { msg, resolve, reject }
+        @log(msg)
+        @send_message({ type: 'request', msg: msg })
       catch error
-        reject("send_message(): Error: data_obj:", data_obj)
+        delete @rmi_hash[rmi_id]
+        reject("send_message():\n  #{error.msg}")
 
 
   # Method recv_request()
-  recv_request: ({ obj_id, method_name, args }) =>
-    @registry.handle_request({ obj_id, method_name, args })
-
-    @log("recv_request(): ", msg: { obj_id, method_name, args })
-
-    # callback used below
-    cb = (res) => @send_response(rmi_id, res, null)
-
-    # error handler used below
-    eh = (err) => @send_response(rmi_id, null, err)
-
-    # Look up the object and apply the method to the args.  Method is
-    # assumed to return a promise.
-    #
-    obj = @registry[obj_id]
-    obj[method].apply(obj, args).then(cb).catch(eh)
+  recv_request: ({ rmi_id, obj_id, method_name, args }) =>
+    msg = { rmi_id, obj_id, method_name, args }
+    @log(msg)
+    try
+      result = await @registry.handle_request({ obj_id, method_name, args })
+      error = null
+      @send_response({ rmi_id, result, error })
+    catch err
+      result = null
+      @send_response({ rmi_id, result, error })
 
 
   #--------------------------------------------------------------------
@@ -219,30 +189,32 @@ class RMI_Connection
 
   # Method send_response()
   send_response : ({ rmi_id, result, error }) =>
-    msg = { rmi_id, result, error }
-
-    @log("send_response(): ", msg: msg)
+    response = { rmi_id, result, error }
+    @log(response)
 
     new Promise (resolve, reject) =>
       try
-        @send_message(type: 'response', msg: msg)
+        @send_message(type: 'response', msg: response)
       catch error
-        @log("Error in send_response():", msg: msg)
+        @log("Error in send_response():", msg: resonse)
         reject( {rmi_id, result, error} )
 
 
   # Method recv_resonse()
   recv_response : ({ rmi_id, result, error }) =>
     response = { rmi_id, result, error }
-    @log("recv_response(): ", response: response)
+    @log(response)
+
+    request = @rmi_hash[rmi_id]
+    delete @rmi_hash[rmi_id]
+
     try
-      { request, resolve, reject } = @rmi_hash[rmi_id]
-      if error
-        reject({request, error})
+      if result
+        request.resolve(result)
       else
-        resolve(result)
+        request.reject({request, error})
     catch error
-      reject({request, error})
+      request.reject({request, error})
 
 
 #----------------------------------------------------------------------
