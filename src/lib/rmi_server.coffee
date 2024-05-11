@@ -45,7 +45,7 @@ class RMI_Server
     @log = @logger.log
 
     # connections added here as they are created
-    @connections = []
+    @connections = {}
 
     # default to 'ws+unix'
     @protocol = @options?.protocol || 'ws+unix'
@@ -117,16 +117,24 @@ class RMI_Server
       try
         @log("RMI_Server: trying new connection: ", ws: ws)
         conn = new @Connection(this, ws, @options)
+        @add_connection(conn)
         await conn.init()
-        @connections.push(conn)
-        @log("connection added:", 'conn.id': conn.id)
       catch error
         msg = "\nRMI_Server_Common: "
         msg += "\nError in connection event handler"
         new Error(msg))
 
+
   #-----------------------------------------------------------------------
   # Methods
+
+  add_connection: (conn) =>
+    @connections[conn.id] = conn
+    @log("connection added:", 'conn.id': conn.id)
+
+  remove_connection: (id) =>
+    delete @connections[id]
+    @log("connection removed:", 'conn.id': id)
 
   add_object: ({ obj, method_names }) =>
     @objects[obj.id] = { obj, method_names }

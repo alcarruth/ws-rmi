@@ -33,7 +33,7 @@ class RMI_Connection
     @waiter = null
 
     @registry = @owner.registry
-    @stubs = new RMI_Stub_Registry(this, @options)
+    @stub_registry = new RMI_Stub_Registry(this, @options)
 
     # RMI's are given a unique number and the Promise's resolve() and
     # reject() functions are kept as callbacks to be executed when an
@@ -77,6 +77,7 @@ class RMI_Connection
   #
   on_Close: (evt) =>
     @log("peer disconnected.", evt.data)
+    @owner.remove_connection(@id)
 
   # TODO: think of something to do here.
   on_Error: (evt) =>
@@ -91,7 +92,7 @@ class RMI_Connection
     @ws.close()
 
   init: =>
-    await @stubs.init()
+    await @stub_registry.init()
 
   #--------------------------------------------------------------------
   # Generic messaging methods
