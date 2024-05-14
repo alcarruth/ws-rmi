@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# package: ws-rmi-examples
+# file: /bin/pkg_info
+#
+
+# function pkg_info() takes one argument
+# $1: the directory of the calling script
+#
+function pkg_info() {
+
+  # We're assuming that this script is in <pkg_root>/bin.
+  pkg_root=$(realpath "$(dirname ${1})/..")
+  pkg_name=$(basename "$pkg_root")
+
+  pushd $pkg_root &> /dev/null
+  pkg_branch="$(git rev-parse --abbrev-ref HEAD)"
+  popd &> /dev/null
+}

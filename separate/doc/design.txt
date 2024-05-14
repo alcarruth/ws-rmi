@@ -1,0 +1,79 @@
+
+Remote Method Invocation over Web Sockets in node.js
+-----------------------------------------------------
+
+
+Overview
+---------
+
+This RMI package is implemented as a stack as shown in the figure
+below.  In the left column we have the client stack and on the right
+is the server side stack.
+
+A remote method invocation begins with a call to a method of a stub
+object, which has a signature of the form function(args, callback),
+which is identical to the signature of the method of the same name of
+the remote object.  The goal of this rmi package is to make this
+process as simple and transparent as possible.
+
+
+  +------------------------------------------------------------+  method_call:
+  |                                                            |     args
+  |   ┌──────────────────────┐      ┌──────────────────────┐   |     cb
+  |   │     Object Stub      │      │       Object         │   |
+  |   └──────────┬───────────┘      └──────────┬───────────┘   |
+  |              │                             │               |
+  +--------------│-----------------------------│---------------+  rmi_invocation:
+  |              │                             │               |     object
+  |   ┌──────────┴───────────┐      ┌──────────┴───────────┐   |     method_name
+  |   │      RMI Manager     │      │     RMI Handler      │   |     args
+  |   └──────────┬───────────┘      └──────────┬───────────┘   |     cb
+  |              │                             │               |
+  +--------------│-----------------------------│---------------+  rmi_obj:
+  |              │                             │               |     obj_id
+  |   ┌──────────┴───────────┐      ┌──────────┴───────────┐   |     method_name
+  |   │      CB Manager      │      │      CB Handler      │   |     args
+  |   └──────────┬───────────┘      └──────────┬───────────┘   |     cb
+  |              │                             │               |
+  +--------------│-----------------------------│---------------+  cb_obj:  
+  |              │                             │               |     obj_id
+  |   ┌──────────┴───────────┐      ┌──────────┴───────────┐   |     method_name
+  |   │        Codec         │      │        Codec         │   |     args
+  |   └──────────┬───────────┘      └──────────┬───────────┘   |     cb_id
+  |              │                             │               |
+  +--------------│-----------------------------│---------------+  utf-8
+  |              │                             │               |
+  |   ┌──────────┴───────────┐  ws  ┌──────────┴───────────┐   |
+  |   │      WS Client       │<---->│      WS Server       │   |
+  |   └──────────────────────┘      └──────────────────────┘   |
+  |                                                            |
+  +------------------------------------------------------------+
+
+
+Object is an instance of a remotable class defined by the user. The
+remotable class requires properties "remote_methods" and "obj_id".  A
+stub class is generated automatically from the remotable class by
+replacing each method listed (by name) in the remote_methods list with
+a method of the same name which uses the RMI Manager to make the call
+to the remote object.  The stub object is an instance of the this stub
+class and is constructed with the obj_id of the remote object.
+
+RMI Manager enables the Object Stub automation. A method of Object
+Stub has the same signature as the corresponding remote method, but
+uses the invoke() method of the RMI Manager, including the object id
+and the method name in addition to the args and callback.
+
+The CB Manager/Handler implements the request/response capability.
+The callback is peeled off and recorded for application to the
+response.  This requires a callback id, which is generated and
+included in the request.
+
+Codec is responsible for serializing and deserializing the data.
+Probably just JSON.stringify and JSON.parse, but could be whatever.
+This codec behaves the same way on both sides of the websocket.  Data
+above the codec level are transmitted as JS objects and below data are
+transmitted in a buffer suitable for the websocket send() method.
+
+The WS Client/Server are as in the 'ws' package.  Communication is
+over a websocket using 'message' events.
+

@@ -4,7 +4,7 @@
 #  package: ws-rmi
 #
 
-{ RMI_Client, RMI_Connection } = require('../lib')
+{ RMI_Client, RMI_Connection } = require('../client')
 options_choices = require('./options')
 examples = require('./examples')
 
@@ -20,7 +20,4 @@ class Test_Client extends RMI_Client
       method_names: spec.method_names
       })
 
-client = new Test_Client()
-client.add_example()
-
-module.exports = client
+module.exports = { Test_Client }

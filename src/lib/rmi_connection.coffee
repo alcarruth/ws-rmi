@@ -5,6 +5,7 @@
 #
 
 { random_id, Logger } = require('armazilla-util')
+
 { RMI_Object_Registry, RMI_Stub_Registry } = require('./rmi_registry')
 
 #----------------------------------------------------------------------

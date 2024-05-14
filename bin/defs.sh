@@ -1,59 +1,97 @@
 #!/bin/bash
+#
+# package: ws-rmi-examples
+# file: /bin/defs.sh
+#
 
-#root_dir="/var/www/git/projects/ws-rmi"
-root_dir="."
+bin_dir=$(dirname $0)
+. ${bin_dir}/pkg_info
+
+pkg_info ${0}
+
+echo pkg_root: ${pkg_root}
+echo pkg_name: ${pkg_name}
+echo pkg_branch: ${pkg_branch}
+
+src="${pkg_root}/src"
+build="${pkg_root}/${pkg_branch}"
+node_modules="${pkg_root}/node_modules/"
 
 function clean {
-  echo "rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/"
-  rm -rf ./doc/ ./lib/ ./common/ ./client/ ./server/ ./test/
+  echo "cleaning ${build}"
+  rm -rf ${build}
+  mkdir -p ${build}/doc/
+  mkdir -p ${build}/lib/
+  mkdir -p ${build}/client/
+  mkdir -p ${build}/server/
+  mkdir -p ${build}/common/
+  mkdir -p ${build}/test/
+  mkdir -p ${build}/test/
 }
 
 function build_doc {
   echo "building ws-rmi/doc"
-  cp -r ./src/doc/ .
+  cp -r ./src/doc/ ${build}
 }
 
 function build_lib {
-  echo "building ws-rmi/lib"
+  echo "building ${build}/lib"
   mkdir -p ./lib
-  coffee -c -o ./lib ./src/lib/*.coffee > /dev/null
-  coffee -c -o . ./src/index.coffee > /dev/null
+  coffee -c -o ${build}/lib ./src/lib/*.coffee > /dev/null
+  coffee -c -o ${build} ./src/index.coffee > /dev/null
 }
 
 function build_client {
-  echo "building ws-rmi/client"
-  mkdir -p ./client
-  coffee -c -o ./client/ ./src/client/*.coffee > /dev/null
+  echo "building ${build}/client"
+  mkdir -p ${build}/client
+  coffee -c -o ${build}/client/ ./src/client/*.coffee > /dev/null
 }
 
 function build_server {
-  echo "building ws-rmi/server"
-  mkdir -p ./server
-  coffee -c -o ./server ./src/server/*.coffee > /dev/null
+  echo "building ${build}/server"
+  mkdir -p ${build}/server
+  coffee -c -o ${build}/server ./src/server/*.coffee > /dev/null
 }
 
 function build_common {
-  echo "building ws-rmi/common"
-  mkdir -p ./common
-  coffee -c -o ./common ./src/common/*.coffee > /dev/null
+  echo "building ${build}/common"
+  mkdir -p ${build}/common
+  coffee -c -o ${build}/common ./src/common/*.coffee > /dev/null
 }
 
 function build_test {
-  echo "building ws-rmi/test"
-  mkdir -p ./test/
-  coffee -c -o ./test ./src/test/*.coffee > /dev/null
-  for dir in examples; do
-    echo "building ws-rmi/test/${dir}"
-    mkdir -p ./test/${dir}/
-    coffee -c -o ./test/${dir} ./src/test/${dir}/*.coffee > /dev/null
-  done
+  echo "building ${build}/test"
+  mkdir -p ${build}/test/
+  coffee -c -o ${build}/test ./src/test/*.coffee > /dev/null
+  mkdir -p ${build}/test/examples/
+  coffee -c -o ${build}/test/examples ./src/test/examples/*.coffee > /dev/null
+}
+
+function browserify {
+  node ${pkg_root}/node_modules/browserify/bin/cmd.js $@
+}
+
+function build_browser {
+  echo "building ${build}/test/browser"
+  mkdir -p ${build}/test/browser/js/
+  cp ${src}/test/browser/index.html ${build}/test/browser/
+  cp -r ${src}/test/browser/css/ ${build}/test/browser/
+  coffee -cM -o ${build}/test/browser/js/ ./src/test/remote_client_nodep.coffee > /dev/null
+}
+
+function build_stacktrace {
+  echo "building ${build}/test/browser/js/stacktrace.js"
+  browserify ${build}/lib/stacktrace.js > ${build}/test/browser/js/stacktrace.js
+  cp ${node_modules}/stacktrace-js/dist/stacktrace.js ${build}/test/browser/js/
 }
 
 function build {
   build_doc
   build_lib
-  build_common
   build_client
   build_server
+  build_common
   build_test
+  build_browser
+  build_stacktrace
 }

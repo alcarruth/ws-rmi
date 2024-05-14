@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> WebSocket RMI Test </title>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='initial-scale=1,user-scalable=yes' />
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/remote_client_nodep.js"></script>
+  </head>
+  <body>
+    <h1> WebSocket RMI Test </h1>
+    <code>
+      #!/usr/bin/env coffee <br>
+      # <br>
+      #  file: /src/test/remote_client.coffee <br>
+      #  package: ws-rmi <br>
+      # <br>
+      <br>
+      { Stack_RMI_Client } = require('../stack_rmi_client') <br>
+      { options } = require('../settings') <br>
+      <br>
+      client = new Stack_RMI_Client(options.remote_client) <br>
+      <br>
+      if window? <br>
+      window.client = client <br>
+      else <br>
+      module.exports = client <br>
+    </code>
+  </body>
+</html>

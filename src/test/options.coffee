@@ -24,27 +24,12 @@ options = {
   #
   ipc: {
     protocol: 'ws+unix'
-    port: null
     host: null
+    port: null
     path: '/tmp/stack-rmi'
     user: process.env.USER
     group: 'www-data'
     mode: 0o660
-  }
-
-  # Unix IPC options
-  # Used by server and CLI client
-  #
-  ipc: {
-    protocol: 'ws+unix'
-    port: null
-    host: null
-    #uid: undefined # defaults to user starting server
-    #gid: 33        # group 'www-data'
-    user: process.env.USER
-    group: 'www-data'
-    mode: 0o660
-    path: '/tmp/stack-rmi'
   }
 
   # NGINX IPC options
@@ -52,8 +37,8 @@ options = {
   #
   nginx_ipc: {
     protocol: 'ws+unix'
-    port: null
     host: null
+    port: null
     uid: process.env.USER
     gid: 'www-data'
     mode: 0o660
@@ -63,7 +48,7 @@ options = {
   # Remote client options
   # Used by remote cli client and by browser
   #
-  remote_client: {
+  remote: {
     protocol: 'wss'
     port: 443
     host: 'alcarruth.net'

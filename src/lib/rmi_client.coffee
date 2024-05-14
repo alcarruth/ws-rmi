@@ -4,10 +4,9 @@
 #  package: ws-rmi
 #
 
-# This should work both in browser and in node
-WebSocket = window?.WebSocket || require('ws')
-
+WebSocket = window? && window.WebSocket || require('ws')
 { random_id, Logger } = require('armazilla-util')
+
 { RMI_Connection } = require('./rmi_connection')
 { RMI_Object_Registry } = require('./rmi_registry')
 
@@ -43,6 +42,8 @@ class RMI_Client
 
     @connection = null
 
+  remove_connection: =>
+    @connection = null
 
   add_object: ({ obj, method_names }) =>
     @objects[obj.id] = { obj, method_names }

@@ -20,8 +20,4 @@ class Test_Server extends RMI_Server
       method_names: spec.method_names
       })
 
-server = new Test_Server()
-server.add_example()
-
-module.exports = server
-
+module.exports = { Test_Server }
