@@ -1,4 +1,8 @@
-
+#!/usr/bin/env coffee
+#
+#  file: /src/test/remote_client_nodep.coffee
+#  package: ws-rmi
+#
 
 #!/usr/bin/env coffee
 #
@@ -660,14 +664,6 @@ class Test_Client extends RMI_Client
         method_names: example.method_names
         })
 
-  fun_one: =>
-    @fun_two()
-
-  fun_two: =>
-    @fun_three()
-
-  fun_three: =>
-    @log("Hi Al!")
 
 #----------------------------------------------------------------------
 
