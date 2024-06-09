@@ -7,6 +7,7 @@
 {
   RMI_Client
   RMI_Server
+  RMI_Proxy
   RMI_Connection
   RMI_Object
   RMI_Stub
@@ -20,6 +21,7 @@ test = require('./test')
 module.exports = {
   RMI_Client
   RMI_Server
+  RMI_Proxy
   RMI_Connection
   RMI_Object
   RMI_Stub

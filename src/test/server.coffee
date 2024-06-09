@@ -12,6 +12,7 @@ class Test_Server extends RMI_Server
   constructor: (type = 'ipc') ->
     options = options_choices[type]
     super({ options })
+    @type = type
 
   add_example: (name = 'stack') =>
     spec = examples[name]

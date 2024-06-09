@@ -95,6 +95,28 @@ class RMI_Connection
   init: =>
     await @stub_registry.init()
 
+  ready: =>
+    new Promise (resolve, reject) =>
+      delay = 100
+      max_tries = 100
+      tries = 1
+      try
+        @log("max_tries: #{max_tries}, delay: #{delay} ms...")
+        waiter = setInterval(( =>
+          if @ws.readyState == @ws.OPEN
+            clearInterval(waiter)
+            resolve(true)
+          else if tries >= max_tries
+            clearInterval(waiter)
+            @log("tries >= max_tries")
+            reject("tries >= max_tries")
+          else
+            tries += 1
+          ), delay)
+      catch error
+        reject(error)
+
+
   #--------------------------------------------------------------------
   # Generic messaging methods
   #
@@ -103,37 +125,11 @@ class RMI_Connection
   send_message: ({ type, msg }) =>
     @log({ type, msg })
     data = JSON.stringify({ type, msg })
-
     try
-
-      # If the ws is connected then proceed as normal.
-      #
-      if @ws.readyState == @ws.OPEN
-        @ws.send(data)
-
-      # If not ready but we're still connecting, then check again
-      # every ${delay} ms.
-      #
-      else if @ws.readyState == @ws.CONNECTING
-        delay = 100
-        max_tries = 30
-        tries = 0
-        @waiter = setInterval(( =>
-          @log("waiting #{delay} ms...")
-          tries += 1
-          if @ws.readyState == @ws.OPEN || tries >= max_tries
-            clearInterval(@waiter)
-            @ws.send(data, delay)))
-
-      # The other possible states are CLOSED and CLOSING.  Either
-      # of these is an error.
-      #
-      else
-        throw new Error('ws.readyState not OPEN or CONNECTING')
-
+      await @ready()
+      @ws.send(data)
     catch error
-      @log({ data, error })
-
+      @log(error)
 
 
   # JSON.parse and handle as appropriate.

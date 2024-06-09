@@ -98,4 +98,4 @@ class RMI_Client
     @ws.close()
 
 
-exports.RMI_Client = RMI_Client
+module.exports = { RMI_Client }

@@ -4,7 +4,6 @@
 #
 
 { random_id, Logger } = require('armazilla-util')
-{ RMI_Object, RMI_Stub } = require('./rmi_object')
 WebSocket = window? && window.WebSocket || require('ws')
 
 #----------------------------------------------------------------------

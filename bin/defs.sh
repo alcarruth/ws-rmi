@@ -63,8 +63,11 @@ function build_test {
   echo "building ${build}/test"
   mkdir -p ${build}/test/
   coffee -c -o ${build}/test ./src/test/*.coffee > /dev/null
-  mkdir -p ${build}/test/examples/
-  coffee -c -o ${build}/test/examples ./src/test/examples/*.coffee > /dev/null
+  for dir in examples ipc ipc_proxy; do
+    echo "building ${build}/test/${dir}/"
+    mkdir -p ${build}/test/${dir}/
+    coffee -c -o ${build}/test/${dir}/ ./src/test/${dir}/*.coffee > /dev/null
+  done
 }
 
 function browserify {
@@ -76,7 +79,8 @@ function build_browser {
   mkdir -p ${build}/test/browser/js/
   cp ${src}/test/browser/index.html ${build}/test/browser/
   cp -r ${src}/test/browser/css/ ${build}/test/browser/
-  coffee -cM -o ${build}/test/browser/js/ ./src/test/remote_client_nodep.coffee > /dev/null
+  #coffee -cM -o ${build}/test/browser/js/ ./src/test/remote_client_nodep.coffee > /dev/null
+  browserify ${build}/test/remote_client.js > ${build}/test/browser/js/remote_client.js
 }
 
 function build_stacktrace {

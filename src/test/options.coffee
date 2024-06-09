@@ -22,11 +22,24 @@ options = {
   # Unix IPC options
   # Used by server and CLI client
   #
-  ipc: {
+  ipc_server: {
     protocol: 'ws+unix'
     host: null
     port: null
-    path: '/tmp/stack-rmi'
+    path: '/var/local/ws-rmi/stack-rmi'
+    user: process.env.USER
+    group: 'www-data'
+    mode: 0o660
+  }
+
+  # Unix IPC options
+  # Used by server and CLI client
+  #
+  ipc_proxy: {
+    protocol: 'ws+unix'
+    host: null
+    port: null
+    path: '/var/local/ws-rmi/ipc_proxy'
     user: process.env.USER
     group: 'www-data'
     mode: 0o660
@@ -42,7 +55,7 @@ options = {
     uid: process.env.USER
     gid: 'www-data'
     mode: 0o660
-    path: '/tmp/stack-rmi'
+    path: '/var/local/ws-rmi/stack-rmi'
   }
 
   # Remote client options

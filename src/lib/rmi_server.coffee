@@ -140,6 +140,10 @@ class RMI_Server
     @objects[obj.id] = { obj, method_names }
     @registry.update()
 
+  del_object: ({ id }) =>
+    delete @objects[id]
+    @registry.update()
+
   update_registry: =>
     @registry.update()
 
@@ -187,4 +191,4 @@ class RMI_Server
     @log("server stopped.")
 
 
-exports.RMI_Server = RMI_Server
+module.exports = { RMI_Server }

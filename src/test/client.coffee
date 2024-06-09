@@ -9,9 +9,10 @@ options_choices = require('./options')
 examples = require('./examples')
 
 class Test_Client extends RMI_Client
-  constructor: (type = 'ipc') ->
+  constructor: (type = 'ipc_server') ->
     options = options_choices[type]
     super({ options })
+    @type = type
 
   add_example: (name = 'stack') =>
     spec = examples[name]
