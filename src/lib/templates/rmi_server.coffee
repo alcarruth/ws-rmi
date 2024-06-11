@@ -11,13 +11,9 @@ ws = require('ws')
 http = require('http')
 https = require('https')
 
-{
-  random_id,
-  Logger
-  RMI_Connection
-  RMI_Object_Registry
-  #
-} = require('./rmi_client_nodep')
+{ random_id, Logger } = require('armazilla-util')
+{ RMI_Connection } = require('./rmi_connection')
+{ RMI_Object_Registry } = require('./rmi_registry')
 
 # An instance of RMI_Server provides remote method invocation (RMI)
 # services for its @objects to clients connected by a websocket.

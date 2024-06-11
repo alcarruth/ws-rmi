@@ -5,13 +5,13 @@
 #
 
 { RMI_Client } = require('../../lib')
-options = require('../options')
-{ stack } = require('../examples')
+options = require('../options').ipc_server
+spec = require('../examples').stack
 
-client = new RMI_Client({ options: options.ipc_server })
+client = new RMI_Client({ options })
 client.add_object({
-  obj: new stack.Class()
-  method_names: stack.method_names
+  obj: new spec.Class()
+  method_names: spec.method_names
   })
 
 module.exports = client

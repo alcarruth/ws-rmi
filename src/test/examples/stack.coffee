@@ -4,7 +4,7 @@
 #  package: ws-rmi
 #
 
-{ random_id, Logger } = require('armazilla-util')
+{ random_id, Logger } = require('../../client')
 
 class Stack
 

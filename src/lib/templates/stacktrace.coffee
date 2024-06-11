@@ -10,3 +10,4 @@ if window?
   window.stacktrace = stacktrace
 else
   module.exports = stacktrace
+

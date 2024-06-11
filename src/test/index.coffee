@@ -4,14 +4,15 @@
 #  package: ws-rmi
 #
 
-client = require('./client')
-server = require('./server')
 options = require('./options')
 examples = require('./examples')
 
+ipc = require('./ipc')
+remote = require('./remote')
+
 module.exports = {
-  client
-  server
+  ipc
+  remote
   options
   examples
 }

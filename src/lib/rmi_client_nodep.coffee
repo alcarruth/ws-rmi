@@ -1,10 +1,65 @@
 #!/usr/bin/env coffee
 #
-#  file: /src/lib/rmi_object.coffee
+# file: /src/lib/templates/pre_code.coffee
+# package: ws-rmi
 #
 
-{ random_id, Logger } = require('armazilla-util')
-WebSocket = window? && window.WebSocket || require('ws')
+
+if window?
+  WebSocket = window.WebSocket
+  # stacktrace = window.stacktrace
+  inspect = (x, options) -> x
+
+else
+  WebSocket = require('ws')
+  stacktrace = require('stacktrace-js')
+  { inspect } = require('util')
+
+
+#----------------------------------------------------------------------
+# returns a randomized id string
+#
+random_id = (obj, name) ->
+  name = name || obj.constructor.name
+  "#{name}_#{Math.random().toString()[2..]}"
+
+#----------------------------------------------------------------------
+#
+class Logger
+
+  constructor: ({ obj, options, threshold }) ->
+    @owner_id = obj?.id || null
+    @options =
+      colors: options?.colors || true
+      depth: options?.depth || null
+    @threshold = if threshold? then threshold else 2
+
+  _log: (xs, type='') =>
+    if window?
+      console.log console.trace()
+    else
+      function_name = (await stacktrace.get())[2].functionName
+      console.log("\n#{type}#{function_name}():")
+    for x in xs
+      console.log(inspect(x, @options))
+    return undefined
+
+  log_level: (level, xs...) =>
+    if level >= @threshold
+      @log(xs...)
+
+  log: (xs...) =>
+    @_log(xs)
+
+  info: (xs...) =>
+    @_log(xs, 'INFO: ')
+
+  warn: (xs...) =>
+    @_log(xs, 'WARNING: ')
+
+  error: (xs...) =>
+    @log(xs, 'ERROR: ')
+
 
 #----------------------------------------------------------------------
 # RMI_Object
@@ -85,12 +140,6 @@ class RMI_Stub
         @log("rmi failed", request)
         reject(err.msg)
 
-#----------------------------------------------------------------------
-
-#!/usr/bin/env coffee
-#
-#  file: /src/lib/rmi_registry.coffee
-#
 
 #-----------------------------------------------------------------------
 # RMI_Object_Registry
@@ -256,16 +305,10 @@ class RMI_Stub_Registry
     return stubs.filter((x) -> x.name == name)
 
 
-#-----------------------------------------------------------------------
-
-# -*- coffee -*-
-#
-#  file: /src/lib/rmi_connection_separate.coffee
-#  package: ws-rmi
-#
 
 #----------------------------------------------------------------------
-
+# Class RMI_Connection
+#
 class RMI_Connection
 
 
@@ -351,6 +394,28 @@ class RMI_Connection
   init: =>
     await @stub_registry.init()
 
+  ready: =>
+    new Promise (resolve, reject) =>
+      delay = 100
+      max_tries = 100
+      tries = 1
+      try
+        @log("max_tries: #{max_tries}, delay: #{delay} ms...")
+        waiter = setInterval(( =>
+          if @ws.readyState == @ws.OPEN
+            clearInterval(waiter)
+            resolve(true)
+          else if tries >= max_tries
+            clearInterval(waiter)
+            @log("tries >= max_tries")
+            reject("tries >= max_tries")
+          else
+            tries += 1
+          ), delay)
+      catch error
+        reject(error)
+
+
   #--------------------------------------------------------------------
   # Generic messaging methods
   #
@@ -359,37 +424,11 @@ class RMI_Connection
   send_message: ({ type, msg }) =>
     @log({ type, msg })
     data = JSON.stringify({ type, msg })
-
     try
-
-      # If the ws is connected then proceed as normal.
-      #
-      if @ws.readyState == @ws.OPEN
-        @ws.send(data)
-
-      # If not ready but we're still connecting, then check again
-      # every ${delay} ms.
-      #
-      else if @ws.readyState == @ws.CONNECTING
-        delay = 100
-        max_tries = 30
-        tries = 0
-        @waiter = setInterval(( =>
-          @log("waiting #{delay} ms...")
-          tries += 1
-          if @ws.readyState == @ws.OPEN || tries >= max_tries
-            clearInterval(@waiter)
-            @ws.send(data, delay)))
-
-      # The other possible states are CLOSED and CLOSING.  Either
-      # of these is an error.
-      #
-      else
-        throw new Error('ws.readyState not OPEN or CONNECTING')
-
+      await @ready()
+      @ws.send(data)
     catch error
-      @log({ data, error })
-
+      @log(error)
 
 
   # JSON.parse and handle as appropriate.
@@ -476,13 +515,8 @@ class RMI_Connection
 
 
 #----------------------------------------------------------------------
-
-# -*- coffee -*-
+# Class RMI_Client
 #
-#  file: /src/client/rmi_client.coffee
-#  package: ws-rmi
-#
-
 class RMI_Client
 
   # Connnection should be a sub-class of RMI_Connection in order to
@@ -570,11 +604,21 @@ class RMI_Client
     @ws.close()
 
 
-module.exports = {
+
+
+ws_rmi = {
+  random_id
+  Logger
+  RMI_Client
+  RMI_Connection
   RMI_Object
   RMI_Stub
   RMI_Object_Registry
   RMI_Stub_Registry
-  RMI_Connection
-  RMI_Client
-}
+  }
+
+
+if window?
+  window.ws_rmi = ws_rmi
+else
+  module.exports = ws_rmi

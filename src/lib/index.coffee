@@ -4,17 +4,27 @@
 #  package: ws-rmi
 #
 
-{ RMI_Client } = require('./rmi_client')
+{
+  random_id
+  Logger
+  RMI_Client
+  RMI_Connection
+  RMI_Object
+  RMI_Object_Registry
+  RMI_Stub
+  RMI_Stub_Registry
+  #
+} = require('./rmi_client_nodep')
+
+# { RMI_Proxy } = require('./rmi_proxy')
 { RMI_Server } = require('./rmi_server')
-{ RMI_Proxy } = require('./rmi_proxy')
-{ RMI_Connection } = require('./rmi_connection')
-{ RMI_Object, RMI_Stub } = require('./rmi_object')
-{ RMI_Object_Registry, RMI_Stub_Registry } = require('./rmi_registry')
 
 module.exports = {
+  random_id
+  Logger
   RMI_Client
   RMI_Server
-  RMI_Proxy
+  #RMI_Proxy
   RMI_Connection
   RMI_Object
   RMI_Stub

@@ -5,9 +5,11 @@
 #
 
 {
+  random_id
+  Logger
   RMI_Client
   RMI_Server
-  RMI_Proxy
+  # RMI_Proxy
   RMI_Connection
   RMI_Object
   RMI_Stub
@@ -19,9 +21,11 @@
 test = require('./test')
 
 module.exports = {
+  random_id
+  Logger
   RMI_Client
   RMI_Server
-  RMI_Proxy
+  # RMI_Proxy
   RMI_Connection
   RMI_Object
   RMI_Stub

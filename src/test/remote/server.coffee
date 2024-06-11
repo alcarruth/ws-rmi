@@ -1,6 +1,6 @@
 # -*- coffee -*-
 #
-#  file: /src/test/ipc/server.coffee
+#  file: /src/test/nginx/server.coffee
 #  package: ws-rmi
 #
 

@@ -36,7 +36,7 @@ function build_doc {
 
 function build_lib {
   echo "building ${build}/lib"
-  mkdir -p ./lib
+  mkdir -p ${build}/lib
   coffee -c -o ${build}/lib ./src/lib/*.coffee > /dev/null
   coffee -c -o ${build} ./src/index.coffee > /dev/null
 }
@@ -63,10 +63,10 @@ function build_test {
   echo "building ${build}/test"
   mkdir -p ${build}/test/
   coffee -c -o ${build}/test ./src/test/*.coffee > /dev/null
-  for dir in examples ipc ipc_proxy; do
+  for dir in examples ipc remote ipc_proxy; do
     echo "building ${build}/test/${dir}/"
     mkdir -p ${build}/test/${dir}/
-    coffee -c -o ${build}/test/${dir}/ ./src/test/${dir}/*.coffee > /dev/null
+    coffee -cM -o ${build}/test/${dir}/ ./src/test/${dir}/*.coffee > /dev/null
   done
 }
 
@@ -80,7 +80,9 @@ function build_browser {
   cp ${src}/test/browser/index.html ${build}/test/browser/
   cp -r ${src}/test/browser/css/ ${build}/test/browser/
   #coffee -cM -o ${build}/test/browser/js/ ./src/test/remote_client_nodep.coffee > /dev/null
-  browserify ${build}/test/remote_client.js > ${build}/test/browser/js/remote_client.js
+  #browserify ${build}/test/remote/client.js > ${build}/test/browser/js/remote_client.js
+  cp ${build}/lib/rmi_client_nodep.js ${build}/test/browser/js/ws_rmi.js
+  cp ${build}/test/remote/client.js ${build}/test/browser/js/test_client.js
 }
 
 function build_stacktrace {
