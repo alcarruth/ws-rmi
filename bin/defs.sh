@@ -37,7 +37,7 @@ function build_doc {
 function build_lib {
   echo "building ${build}/lib"
   mkdir -p ${build}/lib
-  coffee -c -o ${build}/lib ./src/lib/*.coffee > /dev/null
+  coffee -cM -o ${build}/lib ./src/lib/*.coffee > /dev/null
   coffee -c -o ${build} ./src/index.coffee > /dev/null
 }
 
@@ -79,8 +79,6 @@ function build_browser {
   mkdir -p ${build}/test/browser/js/
   cp ${src}/test/browser/index.html ${build}/test/browser/
   cp -r ${src}/test/browser/css/ ${build}/test/browser/
-  #coffee -cM -o ${build}/test/browser/js/ ./src/test/remote_client_nodep.coffee > /dev/null
-  #browserify ${build}/test/remote/client.js > ${build}/test/browser/js/remote_client.js
   cp ${build}/lib/rmi_client_nodep.js ${build}/test/browser/js/ws_rmi.js
   cp ${build}/test/remote/client.js ${build}/test/browser/js/test_client.js
 }
@@ -99,5 +97,5 @@ function build {
   build_common
   build_test
   build_browser
-  build_stacktrace
+  # build_stacktrace
 }
