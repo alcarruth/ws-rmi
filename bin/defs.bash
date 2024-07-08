@@ -1,25 +1,22 @@
 #!/bin/bash
 #
-# package: ws-rmi-examples
 # file: /bin/defs.sh
+# package: ws-rmi
+#
+# source this file like this:
+# source $(dirname $(realpath ${0}))/defs.sh
 #
 
-bin_dir=$(dirname $0)
-. ${bin_dir}/pkg_info
+source $(dirname $(realpath ${0}))/pkg_info
 
-pkg_info ${0}
-
-echo pkg_root: ${pkg_root}
-echo pkg_name: ${pkg_name}
-echo pkg_branch: ${pkg_branch}
-
-src="${pkg_root}/src"
-build="${pkg_root}/${pkg_branch}"
-node_modules="${pkg_root}/node_modules/"
+src=${pkg_src}/
+build=${pkg_root}/${pkg_branch}/
+node_modules=${pkg_root}/node_modules/
 
 function clean {
   echo "cleaning ${build}"
   rm -rf ${build}
+  rm -f ${pkg_root}/index.js
   mkdir -p ${build}/doc/
   mkdir -p ${build}/lib/
   mkdir -p ${build}/client/
@@ -63,7 +60,7 @@ function build_test {
   echo "building ${build}/test"
   mkdir -p ${build}/test/
   coffee -c -o ${build}/test ./src/test/*.coffee > /dev/null
-  for dir in examples ipc remote ipc_proxy; do
+  for dir in examples ipc remote ipc_router; do
     echo "building ${build}/test/${dir}/"
     mkdir -p ${build}/test/${dir}/
     coffee -cM -o ${build}/test/${dir}/ ./src/test/${dir}/*.coffee > /dev/null
@@ -83,6 +80,11 @@ function build_browser {
   cp ${build}/test/remote/client.js ${build}/test/browser/js/test_client.js
 }
 
+function build_root_index {
+  echo building ${pkg_root}/index.js
+  echo "$(generate_root_index)" >${pkg_root}/index.js
+}
+
 function build_stacktrace {
   echo "building ${build}/test/browser/js/stacktrace.js"
   browserify ${build}/lib/stacktrace.js > ${build}/test/browser/js/stacktrace.js
@@ -90,6 +92,7 @@ function build_stacktrace {
 }
 
 function build {
+  build_root_index
   build_doc
   build_lib
   build_client

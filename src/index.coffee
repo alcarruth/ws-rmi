@@ -18,7 +18,7 @@
   #
 } = require('./lib')
 
-test = require('./test')
+# test = require('./test')
 
 module.exports = {
   random_id
@@ -31,5 +31,5 @@ module.exports = {
   RMI_Stub
   RMI_Object_Registry
   RMI_Stub_Registry
-  test
+  #test
 }

@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# file: /bin/install
+#
+# add install to scripts in package.json like this
+#
+#  "scripts": {
+#     "install": "./bin/install; ./bin/build",
+#     ...
+#  },
+#
+#
+
+source $(dirname $(realpath ${0}))/pkg_info
+
+pkg_info_json >${pkg_bin}/pkg_info.json
+pkg_info_json >${pkg_src}/pkg_info.json
+
+#${pkg_bin}/build

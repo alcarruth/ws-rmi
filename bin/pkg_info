@@ -1,19 +1,39 @@
 #!/bin/bash
 #
-# package: ws-rmi-examples
 # file: /bin/pkg_info
 #
-
-# function pkg_info() takes one argument
-# $1: the directory of the calling script
+# source this file like this:
+# source $(dirname $(realpath ${0}))/pkg_info
 #
-function pkg_info() {
 
-  # We're assuming that this script is in <pkg_root>/bin.
-  pkg_root=$(realpath "$(dirname ${1})/..")
-  pkg_name=$(basename "$pkg_root")
+pkg_bin=$(dirname $(realpath ${0}))
+pkg_root=$(realpath ${pkg_bin}/..)
+pkg_name=$(basename ${pkg_root})
+pkg_src=${pkg_root}/src
 
-  pushd $pkg_root &> /dev/null
-  pkg_branch="$(git rev-parse --abbrev-ref HEAD)"
-  popd &> /dev/null
+pushd $pkg_root &> /dev/null
+pkg_branch="$(git rev-parse --abbrev-ref HEAD)"
+popd &> /dev/null
+
+function pkg_info_json() {
+  echo "{"
+  echo "  \"pkg_root\": \"${pkg_root}\","
+  echo "  \"pkg_bin\": \"${pkg_bin}\","
+  echo "  \"pkg_src\": \"${pkg_src}\","
+  echo "  \"pkg_name\": \"${pkg_name}\","
+  echo "  \"pkg_branch\": \"${pkg_branch}\""
+  echo "}"
+}
+
+function generate_root_index() {
+  echo "#!/usr/bin/env coffee
+//
+// file: /index.js
+// package: ${pkg_name}
+//
+
+(function() {
+  module.exports = require('./${pkg_branch}');
+}).call(this);
+"
 }

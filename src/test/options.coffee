@@ -35,14 +35,20 @@ options = {
   # Unix IPC options
   # Used by server and CLI client
   #
-  ipc_proxy: {
-    protocol: 'ws+unix'
-    host: null
-    port: null
-    path: '/var/local/ws-rmi/ipc_proxy'
-    user: process.env.USER
-    group: 'www-data'
-    mode: 0o660
+  ipc_router: {
+    name: 'ipc_router'
+    public_url: {
+      protocol: 'ws+unix'
+      host: 'alcarruth.net'
+      port: '433'
+      path: '/ws-rmi'
+    }
+    upstream_socket: {
+      socket: '/var/local/ws-rmi/alcarruth.net/ipc_router'
+      mode: 432
+      user: 'carruth'
+      group: 'www-data'
+    }
   }
 
   # NGINX IPC options
@@ -67,6 +73,7 @@ options = {
     host: 'alcarruth.net'
     path: '/wss/ws-rmi-example'
   }
+
 
 
 }

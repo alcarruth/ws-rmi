@@ -1,0 +1,7 @@
+{
+  "pkg_root": "/usr/local/server/git/github/ws-rmi",
+  "pkg_bin": "/usr/local/server/git/github/ws-rmi/bin",
+  "pkg_src": "/usr/local/server/git/github/ws-rmi/src",
+  "pkg_name": "ws-rmi",
+  "pkg_branch": "develop"
+}

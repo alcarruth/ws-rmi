@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./bin/defs.sh;
+source ./bin/defs.bash;
 
 clean;
 build;
