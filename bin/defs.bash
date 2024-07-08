@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# file: /bin/defs.sh
+# file: /bin/defs.bash
 # package: ws-rmi
 #
 # source this file like this:
@@ -80,11 +80,6 @@ function build_browser {
   cp ${build}/test/remote/client.js ${build}/test/browser/js/test_client.js
 }
 
-function build_root_index {
-  echo building ${pkg_root}/index.js
-  echo "$(generate_root_index)" >${pkg_root}/index.js
-}
-
 function build_stacktrace {
   echo "building ${build}/test/browser/js/stacktrace.js"
   browserify ${build}/lib/stacktrace.js > ${build}/test/browser/js/stacktrace.js
@@ -92,6 +87,7 @@ function build_stacktrace {
 }
 
 function build {
+  # build_root_index is defined in /bin/pkg_info
   build_root_index
   build_doc
   build_lib

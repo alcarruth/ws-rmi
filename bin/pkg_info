@@ -25,7 +25,8 @@ function pkg_info_json() {
   echo "}"
 }
 
-function generate_root_index() {
+function build_root_index {
+  echo "building ${pkg_name}/index.js"
   echo "#!/usr/bin/env coffee
 //
 // file: /index.js
@@ -35,5 +36,5 @@ function generate_root_index() {
 (function() {
   module.exports = require('./${pkg_branch}');
 }).call(this);
-"
+" >${pkg_root}/index.js
 }
